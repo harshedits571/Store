@@ -48,13 +48,13 @@ function SuccessContent() {
   return (
     <div className="glass-panel" style={{ maxWidth: '680px', margin: '0 auto', padding: '0', overflow: 'hidden', textAlign: 'left', border: '1px solid var(--border-subtle)' }}>
       {/* Header Section */}
-      <div style={{ background: 'linear-gradient(135deg, rgba(52, 211, 153, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)', padding: '48px 48px 32px 48px', borderBottom: '1px solid rgba(52, 211, 153, 0.2)', textAlign: 'center' }}>
+      <div style={{ background: 'linear-gradient(135deg, rgba(0, 102, 204, 0.08) 0%, rgba(255, 255, 255, 1) 100%)', padding: '48px 48px 32px 48px', borderBottom: '1px solid var(--border-subtle)', textAlign: 'center' }}>
         <div style={{ width: '72px', height: '72px', background: 'var(--success)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', boxShadow: '0 0 30px rgba(52, 211, 153, 0.4)' }}>
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
         </div>
-        <h1 className="h2" style={{ marginBottom: '12px', color: 'white' }}>Payment Successful!</h1>
+        <h1 className="h2" style={{ marginBottom: '12px', color: 'var(--text-primary)' }}>Payment Successful!</h1>
         <p className="text-secondary" style={{ fontSize: '1.125rem', maxWidth: '400px', margin: '0 auto' }}>
           Thank you for your purchase, {order?.name ? order.name.split(' ')[0] : 'Creator'}! Your creative journey starts here.
         </p>
@@ -65,11 +65,11 @@ function SuccessContent() {
         <div className="md-stack" style={{ display: 'flex', justifyContent: 'space-between', gap: '24px', alignItems: 'flex-start', marginBottom: '40px', paddingBottom: '32px', borderBottom: '1px dashed var(--border-subtle)' }}>
           <div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Order ID</div>
-            <div style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '1.125rem', color: 'white', wordBreak: 'break-all' }}>#{orderId}</div>
+            <div style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '1.125rem', color: 'var(--text-primary)', wordBreak: 'break-all' }}>#{orderId}</div>
           </div>
           <div className="md-text-left" style={{ textAlign: 'right' }}>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Amount Paid</div>
-            <div style={{ fontWeight: 600, fontSize: '1.25rem', color: 'white' }}>
+            <div style={{ fontWeight: 600, fontSize: '1.25rem', color: 'var(--text-primary)' }}>
               {order?.currency === 'INR' ? `₹${Number(order?.amount).toFixed(2)}` : `$${Number(order?.amount).toFixed(2)}`}
             </div>
           </div>

@@ -32,6 +32,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [tags, setTags] = useState('');
   const [requiresLicense, setRequiresLicense] = useState(true);
 
+  // Long-Form Landing Page Data
+  const [videoUrl, setVideoUrl] = useState('');
+  const [presetList, setPresetList] = useState('');
+  const [features, setFeatures] = useState<{title: string, description: string, imageUrl: string}[]>([]);
+
   useEffect(() => {
     if (initialLoading || initialized) return;
     const product = products.find(p => p.id === resolvedParams.id);
@@ -40,6 +45,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       setDescription(product.description || '');
       setImageUrls(product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls : (product.imageUrl ? [product.imageUrl] : ['']));
       setAssetUrl(product.downloadUrl || '');
+      setVideoUrl(product.videoUrl || '');
+      setPresetList(product.presetList ? product.presetList.join('\n') : '');
+      setFeatures(product.features || []);
       setPrice(product.price ? product.price.toString() : '');
       setInrPrice(product.inrPrice ? product.inrPrice.toString() : '');
       setSalePrice(product.salePrice ? product.salePrice.toString() : '');
@@ -68,6 +76,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         imageUrl: imageUrls[0] || '',
         imageUrls: imageUrls.filter(url => url.trim() !== ''),
         downloadUrl: assetUrl,
+        videoUrl,
+        presetList: presetList.split('\n').map((t: string) => t.trim()).filter((t: string) => t),
+        features: features.filter(f => f.title || f.description || f.imageUrl),
         price: parseFloat(price),
         inrPrice: inrPrice ? parseFloat(inrPrice) : null,
         salePrice: salePrice ? parseFloat(salePrice) : null,
@@ -142,6 +153,41 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 value={description} 
                 onChange={e => setDescription(e.target.value)} 
               />
+            </div>
+          </div>
+
+          {/* Long Form Content */}
+          <div style={{ background: panelBg, borderRadius: '8px', border: `1px solid ${borderColor}`, padding: '24px' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: '0 0 24px 0', color: '#E5E7EB' }}>Long-Form Landing Page (Optional)</h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontWeight: 600, color: '#E5E7EB' }}>Demo Video URL</label>
+                <input type="url" style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%' }} placeholder="YouTube embed link or .mp4 URL" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontWeight: 600, color: '#E5E7EB' }}>What's Included? (Preset List)</label>
+                <textarea style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%', minHeight: '100px' }} placeholder="One item per line (e.g. '15+ Film Burns\n10+ SFX')" value={presetList} onChange={e => setPresetList(e.target.value)} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label style={{ fontWeight: 600, color: '#E5E7EB' }}>Features (Zig-Zag Layout)</label>
+                  <button onClick={() => setFeatures([...features, {title: '', description: '', imageUrl: ''}])} type="button" className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.875rem' }}>+ Add Feature</button>
+                </div>
+                {features.map((feature, idx) => (
+                  <div key={idx} style={{ padding: '16px', border: `1px dashed ${borderColor}`, borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: textMuted, fontSize: '0.875rem', fontWeight: 600 }}>Feature {idx + 1}</span>
+                      <button onClick={() => setFeatures(features.filter((_, i) => i !== idx))} type="button" style={{ color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem' }}>Remove</button>
+                    </div>
+                    <input type="text" placeholder="Feature Title" value={feature.title} onChange={e => {const f=[...features]; f[idx].title=e.target.value; setFeatures(f);}} style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '8px', borderRadius: '4px' }} />
+                    <textarea placeholder="Feature Description" value={feature.description} onChange={e => {const f=[...features]; f[idx].description=e.target.value; setFeatures(f);}} style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '8px', borderRadius: '4px', minHeight: '60px' }} />
+                    <input type="url" placeholder="Feature Image URL (e.g. from Imgur)" value={feature.imageUrl} onChange={e => {const f=[...features]; f[idx].imageUrl=e.target.value; setFeatures(f);}} style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '8px', borderRadius: '4px' }} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 

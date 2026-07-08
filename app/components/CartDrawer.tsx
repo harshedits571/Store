@@ -82,14 +82,14 @@ export default function CartDrawer() {
                 <Link
                   href="/checkout"
                   className="btn-primary"
-                  style={{ width: '100%', padding: '14px', fontSize: '15px', borderRadius: '12px', textAlign: 'center' }}
+                  style={{ width: '100%', padding: '14px', fontSize: '15px', borderRadius: '50px', textAlign: 'center' }}
                   onClick={() => setCartOpen(false)}
                 >
                   Proceed to Checkout
                 </Link>
                 <button
                   onClick={clearCart}
-                  style={{ width: '100%', padding: '10px', background: 'none', border: '1px solid var(--border-subtle)', borderRadius: '10px', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 500, marginTop: '8px', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                  style={{ width: '100%', padding: '12px', background: 'none', border: '2px solid var(--border-subtle)', borderRadius: '50px', color: 'var(--text-primary)', fontSize: '13px', fontWeight: 700, marginTop: '8px', cursor: 'pointer', transition: 'all 0.2s ease', textTransform: 'uppercase' }}
                 >
                   Clear Cart
                 </button>
