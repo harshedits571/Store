@@ -73,7 +73,14 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       return baseUsd * INR_MULTIPLIER;
     }
     
-    return baseUsd;
+    if (baseUsd > 0) {
+      return baseUsd;
+    }
+    // Fallback: if USD price is missing but INR is provided
+    if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) > 0) {
+      return Number(item.inrPrice) / INR_MULTIPLIER;
+    }
+    return 0;
   };
 
   const getPrice = (item: PriceableItem): number => {
@@ -95,10 +102,22 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     if (item.salePrice !== undefined && item.salePrice !== null && Number(item.salePrice) > 0) {
       return Number(item.salePrice);
     }
-    return Number(item.price) || 0;
+    if (item.price !== undefined && item.price !== null && Number(item.price) > 0) {
+      return Number(item.price);
+    }
+    // Fallback to INR converted to USD if missing
+    if (item.inrSalePrice !== undefined && item.inrSalePrice !== null && Number(item.inrSalePrice) > 0) {
+      return Number(item.inrSalePrice) / INR_MULTIPLIER;
+    }
+    if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) > 0) {
+      return Number(item.inrPrice) / INR_MULTIPLIER;
+    }
+    return 0;
   };
 
   const formatPrice = (amount: number): string => {
+    if (amount === 0) return 'Free';
+    
     if (currency === 'INR') {
        return `₹${Math.round(amount).toLocaleString('en-IN')}`;
     }

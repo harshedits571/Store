@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               ordersCount: 0,
               totalSpent: 0,
               photoURL: currentUser.photoURL || null
-            }).catch(e => console.error("Error creating customer record:", e));
+            }).catch(() => { /* Suppress error to avoid Next.js dev overlay */ });
           } else {
              await setDoc(customerRef, {
                 lastSeen: serverTimestamp(),

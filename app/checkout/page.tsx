@@ -41,6 +41,35 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
+      // --- Handle Free Checkout ---
+      if (dynamicTotal === 0) {
+        setVerifying(true);
+        const freeRes = await fetch('/api/claim-free', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email: user.email,
+            name: customerName,
+            phone: customerPhone,
+            cart: cart,
+            currency,
+            customLinkCode: activeCustomLink?.id || null
+          })
+        });
+        
+        const freeData = await freeRes.json();
+        if (freeData.success) {
+          clearCart();
+          router.push(`/success?orderId=${freeData.orderId}`);
+        } else {
+          setPaymentError("Failed to claim free items: " + freeData.error);
+          setLoading(false);
+          setVerifying(false);
+        }
+        return; // Exit here, do not run Razorpay
+      }
+
+      // --- Handle Paid Checkout ---
       // 1. Create order on our backend and save lead as 'interested'
       const orderRes = await fetch('/api/create-order', {
         method: 'POST',
@@ -261,12 +290,14 @@ export default function CheckoutPage() {
                 <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>Payment Method</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'var(--accent-primary)' }}></div>
-                  <span style={{ fontWeight: 500 }}>Razorpay (Cards, UPI, NetBanking)</span>
+                  <span style={{ fontWeight: 500 }}>
+                    {dynamicTotal === 0 ? 'Free Checkout' : 'Razorpay (Cards, UPI, NetBanking)'}
+                  </span>
                 </div>
               </div>
 
-              <button type="submit" className="btn-primary" style={{ marginTop: '16px', padding: '16px', fontSize: '1.125rem' }} disabled={loading || dynamicTotal <= 0}>
-                {loading ? 'Initializing Payment...' : `Pay ${formatPrice(dynamicTotal)}`}
+              <button type="submit" className="btn-primary" style={{ marginTop: '16px', padding: '16px', fontSize: '1.125rem' }} disabled={loading}>
+                {loading ? 'Processing...' : (dynamicTotal === 0 ? 'Claim for Free' : `Pay ${formatPrice(dynamicTotal)}`)}
               </button>
             </form>
           </div>

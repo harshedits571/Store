@@ -22,7 +22,7 @@ service cloud.firestore {
     match /leads/{leadId} {
       // Admin can read all. Created ONLY via backend API.
       allow create, update, delete: if false; 
-      allow read: if isAdmin(); 
+      allow read: if isAdmin() || (request.auth != null && resource.data.email == request.auth.token.email); 
     }
 
     // -------------------------------------------------------------------------
@@ -77,6 +77,14 @@ service cloud.firestore {
     // Admins Collection
     // -------------------------------------------------------------------------
     match /admins/{email} {
+      allow read: if true; 
+      allow write: if isAdmin();
+    }
+    
+    // -------------------------------------------------------------------------
+    // Articles Collection
+    // -------------------------------------------------------------------------
+    match /articles/{articleId} {
       allow read: if true; 
       allow write: if isAdmin();
     }
