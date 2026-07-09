@@ -31,6 +31,16 @@ export default function CheckoutPage() {
   }, [user]);
 
 
+  const loadScript = (src: string) => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setPaymentError(null);
@@ -41,6 +51,11 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
+      const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+      if (!res) {
+        throw new Error("Razorpay SDK failed to load. Are you online?");
+      }
+
       // 1. Create order on our backend and save lead as 'interested'
       const orderRes = await fetch('/api/create-order', {
         method: 'POST',
@@ -61,16 +76,62 @@ export default function CheckoutPage() {
         throw new Error("Could not create Razorpay order.");
       }
 
-      // 2. Redirect to Razorpay Hosted Checkout (Payment Link)
-      if (order.short_url) {
-        window.location.href = order.short_url;
-      } else {
-        throw new Error("Could not retrieve payment link.");
-      }
-      
+      // 2. Initialize Razorpay Checkout Modal
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+        amount: order.amount,
+        currency: order.currency,
+        name: "Crevo Store",
+        description: "Premium Assets & Plugins",
+        order_id: order.id,
+        handler: async function (response: any) {
+          setVerifying(true);
+          try {
+            // 3. Verify Payment and Generate Licenses
+            const verifyRes = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                leadId: order.leadId
+              })
+            });
+            const verifyData = await verifyRes.json();
+
+            if (verifyData.success) {
+              clearCart();
+              router.push(`/success?order_id=${order.id}`);
+            } else {
+              setPaymentError(verifyData.error || "Payment verification failed.");
+              setVerifying(false);
+            }
+          } catch (err: any) {
+             setPaymentError("Error verifying payment.");
+             setVerifying(false);
+          }
+        },
+        prefill: {
+          name: customerName,
+          email: user.email,
+          contact: customerPhone
+        },
+        theme: {
+          color: "#8b5cf6"
+        }
+      };
+
+      const paymentObject = new (window as any).Razorpay(options);
+      paymentObject.on('payment.failed', function (response: any) {
+        setPaymentError(response.error.description);
+      });
+      paymentObject.open();
+
     } catch (error: any) {
       console.error(error);
       setPaymentError(error.message || "An error occurred initializing checkout.");
+    } finally {
       setLoading(false);
     }
   };
@@ -102,7 +163,6 @@ export default function CheckoutPage() {
 
   return (
     <>
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       
       {/* Verifying Payment Full Screen Overlay */}
       {verifying && (
