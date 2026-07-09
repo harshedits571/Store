@@ -7,6 +7,7 @@ import { useCart } from './context/CartContext';
 import { useCurrency } from './context/CurrencyContext';
 import { CustomLinkProvider } from './context/CustomLinkContext';
 import HeroMockup from './components/HeroMockup';
+import Skeleton from './components/Skeleton';
 import styles from './page.module.css';
 
 /* ═══════════════════════════════════════════════════════════
@@ -104,11 +105,41 @@ export default function Home() {
   /* ── Loading splash ── */
   if (initialLoading) {
     return (
-      <div className={styles.splash}>
-        <div style={{ fontSize: '2rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-1px' }}>
-          Crevo Store
-        </div>
-        <div className={styles.splashBar} />
+      <div className={styles.page}>
+        <section className={styles.hero} style={{ paddingTop: '100px', paddingBottom: '100px' }}>
+          <div className={styles.heroContent} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Skeleton width="60%" height="80px" style={{ marginBottom: '24px' }} />
+            <Skeleton width="40%" height="40px" style={{ marginBottom: '32px' }} />
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <Skeleton width="150px" height="50px" borderRadius="100px" />
+              <Skeleton width="150px" height="50px" borderRadius="100px" />
+            </div>
+          </div>
+        </section>
+        
+        <section className="section" style={{ padding: '80px 24px' }}>
+          <div className="container">
+            <div className={styles.sectionHeader}>
+              <Skeleton width="200px" height="40px" style={{ marginBottom: '40px' }} />
+            </div>
+            <div className={styles.productGrid}>
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className={styles.productCard} style={{ overflow: 'hidden' }}>
+                  <Skeleton width="100%" height="250px" borderRadius="0" />
+                  <div className={styles.productBody} style={{ padding: '24px' }}>
+                    <Skeleton width="70%" height="24px" style={{ marginBottom: '12px' }} />
+                    <Skeleton width="100%" height="16px" style={{ marginBottom: '8px' }} />
+                    <Skeleton width="80%" height="16px" style={{ marginBottom: '24px' }} />
+                    <div className={styles.productFooter}>
+                      <Skeleton width="60px" height="24px" />
+                      <Skeleton width="80px" height="24px" borderRadius="100px" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </div>
     );
   }

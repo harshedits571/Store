@@ -4,6 +4,7 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import { useStore } from '../context/StoreContext';
 import { useCurrency } from '../context/CurrencyContext';
+import Skeleton from '../components/Skeleton';
 
 export default function ProductsPage() {
   const { products, initialLoading: loading } = useStore();
@@ -34,7 +35,22 @@ export default function ProductsPage() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '40px' }}>Loading products...</div>
+        <div className="grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((idx) => (
+            <div key={idx} className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <Skeleton height="200px" borderRadius="12px" />
+              <div>
+                <Skeleton height="28px" width="70%" style={{ marginBottom: '8px' }} />
+                <Skeleton height="16px" width="100%" style={{ marginBottom: '4px' }} />
+                <Skeleton height="16px" width="80%" />
+              </div>
+              <div className="flex-between" style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+                <Skeleton height="28px" width="80px" />
+                <Skeleton height="36px" width="110px" borderRadius="100px" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : filteredProducts.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>No products found in this category.</div>
       ) : (

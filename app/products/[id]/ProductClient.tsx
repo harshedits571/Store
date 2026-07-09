@@ -7,6 +7,7 @@ import { db } from '@/lib/firebase';
 import { useCart } from '../../context/CartContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useCustomLink } from '../../context/CustomLinkContext';
+import Skeleton from '../../components/Skeleton';
 import styles from './page.module.css';
 
 export default function ProductDetailsPage({
@@ -50,7 +51,26 @@ export default function ProductDetailsPage({
       </Link>
       
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '64px', minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading product details...</div>
+        <div className={styles.productLayout}>
+          <div className={styles.imageGallery}>
+            <Skeleton height="500px" borderRadius="24px" />
+            <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+              <Skeleton height="80px" width="80px" borderRadius="12px" />
+              <Skeleton height="80px" width="80px" borderRadius="12px" />
+              <Skeleton height="80px" width="80px" borderRadius="12px" />
+            </div>
+          </div>
+          <div className={styles.productInfo} style={{ background: 'var(--bg-card)', padding: '40px', borderRadius: '24px', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border-subtle)', height: 'max-content' }}>
+            <Skeleton height="24px" width="100px" borderRadius="100px" style={{ marginBottom: '16px' }} />
+            <Skeleton height="40px" width="80%" style={{ marginBottom: '16px' }} />
+            <Skeleton height="48px" width="150px" style={{ marginBottom: '32px' }} />
+            <Skeleton height="56px" width="100%" borderRadius="12px" style={{ marginBottom: '16px' }} />
+            <Skeleton height="56px" width="100%" borderRadius="12px" style={{ marginBottom: '32px' }} />
+            <Skeleton height="20px" width="100%" style={{ marginBottom: '12px' }} />
+            <Skeleton height="20px" width="100%" style={{ marginBottom: '12px' }} />
+            <Skeleton height="20px" width="80%" />
+          </div>
+        </div>
       ) : (
       <div className={styles.productLayout}>
         {/* Left Side: Images */}
@@ -147,6 +167,37 @@ export default function ProductDetailsPage({
             <Link href="/checkout" className="btn-secondary" style={{ width: '100%', padding: '16px', textAlign: 'center', fontSize: '1.125rem', background: '#FCD34D', color: '#000', border: 'none' }}>
               Buy Now
             </Link>
+          </div>
+
+          <div style={{ padding: '16px', borderRadius: '12px', marginBottom: '32px', border: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)', textAlign: 'center' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <span style={{ color: '#10B981' }}>🔒</span> Guaranteed Safe Checkout
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', alignItems: 'center' }}>
+              {/* UPI */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 8px', background: '#fff', borderRadius: '4px', border: '1px solid var(--border-subtle)', height: '32px' }} title="UPI">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" style={{ height: '14px', objectFit: 'contain' }} />
+              </div>
+              {/* Visa */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 8px', background: '#fff', borderRadius: '4px', border: '1px solid var(--border-subtle)', height: '32px', width: '50px' }} title="Visa">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
+              {/* Mastercard */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 8px', background: '#fff', borderRadius: '4px', border: '1px solid var(--border-subtle)', height: '32px' }} title="Mastercard">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style={{ height: '18px', objectFit: 'contain' }} />
+              </div>
+              {/* RuPay */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 8px', background: '#fff', borderRadius: '4px', border: '1px solid var(--border-subtle)', height: '32px' }} title="RuPay">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/RuPay.svg" alt="RuPay" style={{ height: '16px', objectFit: 'contain' }} />
+              </div>
+              {/* Paytm (Wallet) */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 8px', background: '#fff', borderRadius: '4px', border: '1px solid var(--border-subtle)', height: '32px' }} title="Paytm">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" style={{ height: '10px', objectFit: 'contain' }} />
+              </div>
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '12px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              Powered by <strong style={{ color: '#3395FF' }}>Razorpay</strong>
+            </div>
           </div>
           
           <details style={{ marginBottom: '16px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '16px' }} open>

@@ -11,6 +11,7 @@ import SmoothScroll from "./components/SmoothScroll";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { CustomLinkProvider } from "./context/CustomLinkContext";
 import CustomLinkBanner from "./components/CustomLinkBanner";
+import GlobalLoader from "./components/GlobalLoader";
 import { Suspense } from "react";
 import "./globals.css";
 
@@ -82,6 +83,7 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
+        <GlobalLoader />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <SmoothScroll>
             <CurrencyProvider>

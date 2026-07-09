@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { adminDb } from '@/lib/firebaseAdmin';
 
 export async function GET() {
   try {
-    await setDoc(doc(db, 'admins', 'harsheks12345@gmail.com'), {
-      role: 'admin',
-      createdAt: new Date().toISOString()
-    });
-    return NextResponse.json({ success: true, message: 'Admin initialized' });
+    const admins = ['harsheks12345@gmail.com', 'imcreativeeditsmov@gmail.com'];
+    
+    for (const email of admins) {
+      await adminDb.collection('admins').doc(email).set({
+        role: 'admin',
+        createdAt: new Date().toISOString()
+      });
+    }
+    
+    return NextResponse.json({ success: true, message: 'Admins initialized successfully!' });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

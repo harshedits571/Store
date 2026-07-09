@@ -61,75 +61,12 @@ export default function CheckoutPage() {
         throw new Error("Could not create Razorpay order.");
       }
 
-      // 2. Initialize Razorpay Checkout
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
-        amount: order.amount, 
-        currency: order.currency,
-        name: "Crevo Store",
-        description: `Purchase of ${cart.length} items`,
-        order_id: order.id, 
-        handler: async function (response: any) {
-          // 3. Verify payment and generate licenses
-          setVerifying(true);
-          try {
-            const verifyRes = await fetch('/api/generate-license', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                email: user.email,
-                name: customerName,
-                phone: customerPhone,
-                cart: cart, // Pass the whole cart array
-                amount: dynamicTotal,
-                currency: currency,
-                orderId: order.leadId, // Passing the lead ID
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-                customLinkCode: activeCustomLink?.id || null
-              })
-            });
-            
-            const verifyData = await verifyRes.json();
-            
-            if (verifyData.success) {
-              clearCart(); // Empty cart on success
-              router.push(`/success?orderId=${verifyData.orderId}`);
-            } else {
-              alert("Payment verification failed: " + verifyData.error);
-              setLoading(false);
-            }
-          } catch (err) {
-            console.error("Verification error:", err);
-            alert("Error verifying payment.");
-            setLoading(false);
-          }
-        },
-        prefill: {
-          name: customerName,
-          email: user.email || '',
-          contact: customerPhone
-        },
-        theme: {
-          color: "#8B5CF6"
-        },
-        modal: {
-          ondismiss: function() {
-            setLoading(false);
-          }
-        }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      
-      rzp.on('payment.failed', function (response: any) {
-        setPaymentError(`Payment failed: ${response.error.description}. Please try again or contact your bank.`);
-        setLoading(false);
-        setVerifying(false);
-      });
-      
-      rzp.open();
+      // 2. Redirect to Razorpay Hosted Checkout (Payment Link)
+      if (order.short_url) {
+        window.location.href = order.short_url;
+      } else {
+        throw new Error("Could not retrieve payment link.");
+      }
       
     } catch (error: any) {
       console.error(error);

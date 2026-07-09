@@ -77,46 +77,65 @@ export async function POST(request: Request) {
        return NextResponse.json({ error: "Invalid cart amount" }, { status: 400 });
     }
 
-    // 2. Create Razorpay order
+    // 2. Create Razorpay Payment Link
     const instance = new Razorpay({
       key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID as string,
       key_secret: process.env.RAZORPAY_KEY_SECRET as string,
     });
 
+    const leadRefId = adminDb.collection('leads').doc().id; 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (request.headers.get('origin') || 'http://localhost:3000');
+
     const options = {
-      amount: Math.round(calculatedAmount * 100), // amount in smallest currency unit
+      amount: Math.round(calculatedAmount * 100), 
       currency: currency,
-      receipt: "receipt_order_" + Date.now(),
+      description: `Crevo Store Purchase`,
+      customer: {
+        name: name || 'Customer',
+        email: email,
+        contact: phone || '+919999999999' // Razorpay sometimes requires a valid format if provided, but let's pass what we have
+      },
+      notify: {
+        email: true,
+        sms: false
+      },
+      reference_id: leadRefId,
+      callback_url: `${baseUrl}/api/verify-payment-link?leadId=${leadRefId}`,
+      callback_method: 'get'
     };
 
-    const order = await instance.orders.create(options);
+    const paymentLink = await instance.paymentLink.create(options);
     
-    if (!order) return NextResponse.json({ error: "Some error occured" }, { status: 500 });
+    if (!paymentLink) return NextResponse.json({ error: "Could not create payment link" }, { status: 500 });
     
     // 3. Save interested lead to Firestore securely using Admin SDK
-    let leadId = null;
     try {
       if (email) {
-        const leadRef = await adminDb.collection('leads').add({
+        await adminDb.collection('leads').doc(leadRefId).set({
           email,
           name: name || 'Unknown Customer',
           phone: phone || '',
           amount: calculatedAmount,
-          clientAmount: clientAmount, // for auditing
+          clientAmount: clientAmount, 
           currency,
           items: purchasedItems,
           status: 'interested',
-          razorpay_order_id: order.id,
+          razorpay_payment_link_id: paymentLink.id,
+          razorpay_payment_link_url: paymentLink.short_url,
           customLinkCode: customLinkCode || null,
           createdAt: new Date()
         });
-        leadId = leadRef.id;
       }
     } catch (e) {
       console.error("Error creating interested lead:", e);
     }
 
-    return NextResponse.json({ ...order, leadId, calculatedAmount });
+    return NextResponse.json({ 
+      id: paymentLink.id, 
+      short_url: paymentLink.short_url, 
+      leadId: leadRefId, 
+      calculatedAmount 
+    });
   } catch (error: any) {
     console.error("Error creating order:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
