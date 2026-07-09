@@ -5,12 +5,14 @@ import styles from './CartDrawer.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect } from 'react';
 import { useCurrency } from '../context/CurrencyContext';
+import { useCustomLink } from '../context/CustomLinkContext';
 
 export default function CartDrawer() {
   const { cart, removeFromCart, clearCart, isCartOpen, setCartOpen } = useCart();
-  const { getPrice, formatPrice } = useCurrency();
+  const { currency, getPrice, formatPrice } = useCurrency();
+  const { applyCustomPrice } = useCustomLink();
 
-  const dynamicTotal = cart.reduce((sum, item) => sum + getPrice(item), 0);
+  const dynamicTotal = cart.reduce((sum, item) => sum + applyCustomPrice(item.id, getPrice(item), currency), 0);
 
   // Prevent scrolling when drawer is open
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function CartDrawer() {
                       <div className={styles.itemName}>{item.name}</div>
                       <div className={styles.itemCategory}>{item.category}</div>
                     </div>
-                    <div className={styles.itemPrice}>{formatPrice(getPrice(item))}</div>
+                    <div className={styles.itemPrice}>{formatPrice(applyCustomPrice(item.id, getPrice(item), currency))}</div>
                     <button onClick={() => removeFromCart(item.id)} className={styles.removeBtn}>✕</button>
                   </div>
                 ))}

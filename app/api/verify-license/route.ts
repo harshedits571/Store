@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebaseAdmin';
 
 export async function POST(request: Request) {
   try {
@@ -12,15 +11,19 @@ export async function POST(request: Request) {
     }
 
     // Lookup the license
-    const licenseRef = doc(db, 'licenses', licenseKey);
-    const docSnap = await getDoc(licenseRef);
+    const licenseRef = adminDb.collection('licenses').doc(licenseKey);
+    const docSnap = await licenseRef.get();
 
     // 1. Check if Document Exists
-    if (!docSnap.exists()) {
+    if (!docSnap.exists) {
       return NextResponse.json({ status: 'error', message: 'Invalid License Key' }, { status: 404 });
     }
 
     const data = docSnap.data();
+
+    if (!data) {
+      return NextResponse.json({ status: 'error', message: 'Invalid License Key Data' }, { status: 404 });
+    }
 
     // 2. Check Product Match (CRITICAL for preventing cross-product license usage)
     if (data.productId !== productId) {
@@ -40,7 +43,7 @@ export async function POST(request: Request) {
     // 4. Hardware Binding (DRM)
     if (!data.machineId) {
       // First time activation! Bind the machine ID
-      await updateDoc(licenseRef, {
+      await licenseRef.update({
         machineId: machineId
       });
       return NextResponse.json({ status: 'success', message: 'License verified and bound to this machine.', tier: data.tier });

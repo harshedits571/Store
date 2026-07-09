@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { collection, doc, setDoc, addDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebaseAdmin';
+import * as admin from 'firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 import crypto from 'crypto';
 
 // Helper to generate 16 digit key
@@ -17,8 +18,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { 
-      email, name, cart, amount, currency, 
-      razorpay_payment_id, razorpay_order_id, razorpay_signature 
+      email, name, cart, amount, currency, orderId,
+      razorpay_payment_id, razorpay_order_id, razorpay_signature,
+      customLinkCode 
     } = body;
 
     // ----------------------------------------------------------------------
@@ -57,43 +59,43 @@ export async function POST(request: Request) {
       if (item.id === 'bundle' && item.productIds) {
         // Expand bundle into individual product access records
         for (const pid of item.productIds) {
-          const pSnap = await getDoc(doc(db, "products", pid));
-          if (pSnap.exists()) {
+          const pSnap = await adminDb.collection("products").doc(pid).get();
+          if (pSnap.exists) {
             const pData = pSnap.data();
             
             purchasedItems.push({
               id: pid,
-              name: pData.name || "Bundle Item",
-              category: pData.category || "Bundle",
+              name: pData?.name || "Bundle Item",
+              category: pData?.category || "Bundle",
               price: 0,
               isBundleItem: true,
               bundleId: item.id
             });
 
             // Generate license for this specific bundle item if it's a plugin/script
-            if (pData.requiresLicense !== false || ['Plugin', 'Script'].includes(pData.category)) {
+            if (pData?.requiresLicense !== false || ['Plugin', 'Script'].includes(pData?.category)) {
               const licenseKey = generate16DigitKey();
               
               // Save specific license tied to the sub-product
-              await setDoc(doc(db, 'licenses', licenseKey), {
+              await adminDb.collection('licenses').doc(licenseKey).set({
                 email,
                 licenseKey,
                 productId: pid,
-                productName: pData.name,
+                productName: pData?.name,
                 paymentId: razorpay_payment_id,
                 status: 'active',
                 machineId: null,
-                createdAt: serverTimestamp()
+                createdAt: FieldValue.serverTimestamp()
               });
 
-              await setDoc(doc(db, 'license_by_email', `${email}_${pid}`), {
+              await adminDb.collection('license_by_email').doc(`${email}_${pid}`).set({
                 email,
                 licenseKey,
                 productId: pid,
                 status: 'active'
               });
 
-              generatedLicenses.push({ name: pData.name, key: licenseKey });
+              generatedLicenses.push({ name: pData?.name, key: licenseKey });
             }
           }
         }
@@ -118,7 +120,7 @@ export async function POST(request: Request) {
         if (item.requiresLicense !== false || ['Plugin', 'Script', 'Bundle'].includes(item.category)) {
           const licenseKey = generate16DigitKey();
           
-          await setDoc(doc(db, 'licenses', licenseKey), {
+          await adminDb.collection('licenses').doc(licenseKey).set({
             email,
             licenseKey,
             productId: item.id,
@@ -126,10 +128,10 @@ export async function POST(request: Request) {
             paymentId: razorpay_payment_id,
             status: 'active',
             machineId: null,
-            createdAt: serverTimestamp()
+            createdAt: FieldValue.serverTimestamp()
           });
 
-          await setDoc(doc(db, 'license_by_email', `${email}_${item.id}`), {
+          await adminDb.collection('license_by_email').doc(`${email}_${item.id}`).set({
             email,
             licenseKey,
             productId: item.id,
@@ -141,49 +143,64 @@ export async function POST(request: Request) {
       }
     }
 
-    // Save Master Order to Leads
-    const leadRef = await addDoc(collection(db, 'leads'), {
-      email,
-      name,
-      amount,
-      currency: currency || 'USD',
-      items: purchasedItems,
-      paymentId: razorpay_payment_id,
-      status: 'verified',
-      createdAt: serverTimestamp()
-    });
+    // Save Master Order to Leads (Update if orderId provided, else create)
+    let leadRefId = orderId;
+    if (orderId) {
+      await adminDb.collection('leads').doc(orderId).update({
+        items: purchasedItems, // Refresh items just in case
+        paymentId: razorpay_payment_id,
+        status: 'verified',
+        verifiedAt: FieldValue.serverTimestamp()
+      });
+    } else {
+      const newLeadRef = await adminDb.collection('leads').add({
+        email,
+        name,
+        amount,
+        currency: currency || 'USD',
+        items: purchasedItems,
+        paymentId: razorpay_payment_id,
+        status: 'verified',
+        createdAt: FieldValue.serverTimestamp(),
+        verifiedAt: FieldValue.serverTimestamp()
+      });
+      leadRefId = newLeadRef.id;
+    }
 
     // ----------------------------------------------------------------------
     // CRM: Update Customer Profile
     // ----------------------------------------------------------------------
-    const customerRef = doc(db, 'customers', email.toLowerCase());
-    const customerSnap = await getDoc(customerRef);
+    const customerRef = adminDb.collection('customers').doc(email.toLowerCase());
+    
+    // Use setDoc with merge to avoid needing read permissions on the unauthenticated server
+    await customerRef.set({
+      email: email.toLowerCase(),
+      ordersCount: FieldValue.increment(1),
+      totalSpent: FieldValue.increment(Number(amount)),
+      lastOrderDate: FieldValue.serverTimestamp(),
+      lastSeen: FieldValue.serverTimestamp()
+    }, { merge: true }).catch((e: any) => console.error("Error updating customer profile:", e));
+    
+    // If name is provided, update it too
+    if (name) {
+      await customerRef.set({ name }, { merge: true }).catch(() => {});
+    }
 
-    if (customerSnap.exists()) {
-      await updateDoc(customerRef, {
-        ordersCount: (customerSnap.data().ordersCount || 0) + 1,
-        totalSpent: (customerSnap.data().totalSpent || 0) + Number(amount),
-        lastOrderDate: serverTimestamp(),
-        lastSeen: serverTimestamp(),
-        name: name || customerSnap.data().name // update name if provided
-      });
-    } else {
-      await setDoc(customerRef, {
-        email: email.toLowerCase(),
-        name: name || 'Unknown Customer',
-        ordersCount: 1,
-        totalSpent: Number(amount),
-        firstOrderDate: serverTimestamp(),
-        lastOrderDate: serverTimestamp(),
-        lastSeen: serverTimestamp(),
-        notes: "",
-        city: "Unknown" // Placeholder for future geo tracking
-      });
+    // ----------------------------------------------------------------------
+    // Custom Links: Track Revenue and Redemptions
+    // ----------------------------------------------------------------------
+    if (customLinkCode) {
+      const linkRef = adminDb.collection('custom_links').doc(customLinkCode);
+      await linkRef.set({
+        claims: FieldValue.increment(1),
+        totalSalesINR: FieldValue.increment(currency === 'INR' ? Number(amount) : 0),
+        totalSalesUSD: FieldValue.increment(currency === 'USD' ? Number(amount) : 0)
+      }, { merge: true }).catch((e: any) => console.error("Error updating custom link:", e));
     }
 
     return NextResponse.json({ 
       success: true, 
-      orderId: leadRef.id,
+      orderId: leadRefId,
       licenses: generatedLicenses 
     });
 

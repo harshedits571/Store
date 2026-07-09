@@ -5,7 +5,7 @@ export default function TermsPage() {
     <LegalLayout title="Terms of service">
       <div>
         <strong>Customer Care</strong><br/>
-        At Creative Store, we are committed to providing exceptional customer service. If you have any questions, issues, or need assistance with your purchase, please contact us:
+        At Crevo Store, we are committed to providing exceptional customer service. If you have any questions, issues, or need assistance with your purchase, please contact us:
         <br/><br/>
         Email: hello.creativestore@gmail.com
         <br/><br/>

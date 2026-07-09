@@ -10,7 +10,7 @@ export default function Footer() {
           
           {/* Column 1: Brand */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <span className="h2 text-gradient" style={{ margin: 0 }}>Creative Store</span>
+            <span className="h2 text-gradient" style={{ margin: 0 }}>Crevo Store</span>
             <p className="text-secondary" style={{ fontSize: '0.875rem', lineHeight: '1.6', maxWidth: '300px' }}>
               Premium editing assets for creators. Level up your content game with our high-quality packs.
             </p>
@@ -46,7 +46,7 @@ export default function Footer() {
         {/* Bottom Section */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', paddingTop: '32px', borderTop: '1px solid var(--border-subtle)' }}>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            © {new Date().getFullYear()} Creative Store. All rights reserved.
+            © {new Date().getFullYear()} Crevo Store. All rights reserved.
           </span>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
             Designed & developed by XH

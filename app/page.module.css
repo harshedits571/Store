@@ -42,14 +42,13 @@
    ═══════════════════════════════════════════════════════════ */
 .hero {
   position: relative;
-  min-height: 90vh;
+  /* Removed min-height: 90vh to fix the massive gap on 4K screens */
+  padding: 220px 24px 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 180px 24px 60px; /* Increased top padding for the floating navbar */
   z-index: 2;
-  margin-bottom: 40px;
 }
 
 /* Background gradient orb to make the glass pop */
@@ -100,7 +99,99 @@
   gap: 16px;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: 80px;
+  margin-bottom: 0px; /* Mockup provides spacing */
+}
+
+/* ── Hero Mockup Window ── */
+.heroMockupWrap {
+  width: 95%;
+  max-width: 1400px;
+  margin: 0 auto 100px;
+  position: relative;
+  z-index: 5;
+  border-radius: 20px;
+  padding: 8px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.08), 0 10px 20px rgba(0,0,0,0.04);
+  backdrop-filter: blur(20px);
+}
+
+.heroMockupInner {
+  border-radius: 12px;
+  background: var(--bg-primary);
+  height: 60vh;
+  min-height: 400px;
+  max-height: 800px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.mockupHeader {
+  height: 40px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 8px;
+}
+
+.mockupDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.mockupBody {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+.mockupGrid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.mockupGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, var(--accent-primary) 0%, transparent 60%);
+  opacity: 0.15;
+  filter: blur(50px);
+  z-index: 1;
+  animation: floatGlow 6s ease-in-out infinite alternate;
+}
+
+@keyframes floatGlow {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.1; }
+  100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.2; }
+}
+
+.mockupContent {
+  position: relative;
+  z-index: 2;
+  background: var(--bg-glass);
+  padding: 24px 48px;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(10px);
 }
 
 /* ── Floating Info Cards (Apple Glass style) ── */

@@ -4,10 +4,12 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '../context/AuthContext';
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
+  const { user } = useAuth();
 
   const [order, setOrder] = useState<any>(null);
   const [licenses, setLicenses] = useState<any[]>([]);
@@ -15,7 +17,11 @@ function SuccessContent() {
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
-      if (!orderId) {
+      if (!orderId || !user) {
+        if (!user) {
+          // Keep loading until user is available or it times out
+          return;
+        }
         setLoading(false);
         return;
       }
@@ -27,8 +33,12 @@ function SuccessContent() {
           setOrder(orderData);
 
           // Fetch Licenses associated with this paymentId
-          if (orderData.paymentId) {
-            const q = query(collection(db, "licenses"), where("paymentId", "==", orderData.paymentId));
+          if (orderData.paymentId && user?.email) {
+            const q = query(
+              collection(db, "licenses"), 
+              where("paymentId", "==", orderData.paymentId),
+              where("email", "==", user.email)
+            );
             const licSnap = await getDocs(q);
             setLicenses(licSnap.docs.map(d => ({ id: d.id, ...d.data() })));
           }
@@ -39,7 +49,7 @@ function SuccessContent() {
       setLoading(false);
     };
     fetchOrderDetails();
-  }, [orderId]);
+  }, [orderId, user]);
 
   if (loading) {
     return <div className="text-center p-8">Loading order details...</div>;
@@ -48,7 +58,7 @@ function SuccessContent() {
   return (
     <div className="glass-panel" style={{ maxWidth: '680px', margin: '0 auto', padding: '0', overflow: 'hidden', textAlign: 'left', border: '1px solid var(--border-subtle)' }}>
       {/* Header Section */}
-      <div style={{ background: 'linear-gradient(135deg, rgba(0, 102, 204, 0.08) 0%, rgba(255, 255, 255, 1) 100%)', padding: '48px 48px 32px 48px', borderBottom: '1px solid var(--border-subtle)', textAlign: 'center' }}>
+      <div style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, transparent 100%)', backgroundColor: 'var(--bg-secondary)', padding: '48px 48px 32px 48px', borderBottom: '1px solid var(--border-subtle)', textAlign: 'center' }}>
         <div style={{ width: '72px', height: '72px', background: 'var(--success)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', boxShadow: '0 0 30px rgba(52, 211, 153, 0.4)' }}>
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"></polyline>

@@ -8,14 +8,14 @@
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
-  max-width: 800px;
+  max-width: 900px;
   z-index: 1000;
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .navbarWrapperScrolled {
   top: 16px;
-  max-width: 900px;
+  max-width: 1000px;
 }
 
 .navbar {
@@ -53,18 +53,32 @@
   pointer-events: none;
 }
 
+/* ── Left Logo ── */
+.navLogo {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 32px;
+}
+
+.navLogo img {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+}
+
 /* ── Centered Links ── */
 .navLinks {
   display: flex;
   align-items: center;
-  gap: 36px;
+  gap: 24px;
   margin: 0 auto;
 }
 
 .navLink {
   font-size: 14px;
   font-weight: 500;
-  color: #1d1d1f;
+  color: var(--text-primary);
   transition: color 0.2s ease, opacity 0.2s ease;
   cursor: pointer;
   letter-spacing: -0.01em;
@@ -93,7 +107,7 @@
   justify-content: center;
   background: none;
   border: none;
-  color: #1d1d1f;
+  color: var(--text-primary);
   cursor: pointer;
   transition: transform 0.2s ease, color 0.2s ease;
   position: relative;

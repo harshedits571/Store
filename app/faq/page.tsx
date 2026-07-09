@@ -22,6 +22,49 @@ export default function FAQPage() {
         <strong style={{ fontSize: '1.25rem', display: 'block', marginBottom: '8px' }}>I need technical support.</strong>
         We're here to help! If you're experiencing issues with any of our assets, please email us at hello.creativestore@gmail.com with your Order ID and a description of the problem.
       </div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "How do I download my purchased items?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "After completing your purchase, you will be redirected to a success page where you can view your license keys. You will also receive an email with download instructions. You can always access your past purchases by logging into your account and visiting your Dashboard."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Do you offer refunds?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Due to the nature of digital products, all sales are generally final. We only offer refunds in the case of accidental double charges. Please refer to our Refund Policy for more details."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do I use the license keys?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "When you install one of our premium plugins or scripts, you will be prompted to enter your license key upon first launch. Copy the key from your dashboard and paste it into the activation prompt."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "I need technical support.",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "We're here to help! If you're experiencing issues with any of our assets, please email us at hello.creativestore@gmail.com with your Order ID and a description of the problem."
+                }
+              }
+            ]
+          })
+        }}
+      />
     </LegalLayout>
   );
 }

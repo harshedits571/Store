@@ -7,7 +7,7 @@ const defaultSettings = {
   heroTitleLine1: "Spend less time editing,",
   heroTitleLine2: "More time living.",
   heroSubtitle: "Empower your creative storytelling with high-fidelity, ultra-premium scripts, plugins, and sound libraries crafted for professional creators.",
-  bundleTitle: "ALL IN ONE CREATIVE SUITE",
+  bundleTitle: "ALL IN ONE CREVO SUITE",
   bundlePrice: 195,
   bundleOriginalPrice: 370,
   bundleBadge: "⚡ Value $370+ for cheap ⚡",

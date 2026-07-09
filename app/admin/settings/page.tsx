@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const [bundleInrPrice, setBundleInrPrice] = useState('');
   const [bundleItemsText, setBundleItemsText] = useState('');
   const [bundleProductIds, setBundleProductIds] = useState<string[]>([]);
+  const [bundleBgUrl, setBundleBgUrl] = useState('');
 
   // Bio Section
   const [bioTitle, setBioTitle] = useState('');
@@ -59,6 +60,7 @@ export default function SettingsPage() {
           setBundleInrPrice(data.bundleInrPrice ? data.bundleInrPrice.toString() : '');
           setBundleItemsText(data.bundleItems ? data.bundleItems.join('\n') : '');
           setBundleProductIds(data.bundleProductIds || []);
+          setBundleBgUrl(data.bundleBgUrl || '');
 
           setBioTitle(data.bioTitle || '');
           setBioText1(data.bioText1 || '');
@@ -101,6 +103,7 @@ export default function SettingsPage() {
         bundleInrPrice: parseFloat(bundleInrPrice) || null,
         bundleItems,
         bundleProductIds,
+        bundleBgUrl,
         bioTitle,
         bioText1,
         bioText2,
@@ -213,6 +216,10 @@ export default function SettingsPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <label style={{ fontWeight: 500, color: textMuted }}>Bundle Subtitle/Description</label>
               <textarea className="input-field" style={{ minHeight: '60px', resize: 'vertical' }} value={bundleSub} onChange={e => setBundleSub(e.target.value)} placeholder="Get instant lifetime access to our entire premium library..." />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontWeight: 500, color: textMuted }}>Background Image URL (Optional)</label>
+              <input type="text" className="input-field" value={bundleBgUrl} onChange={e => setBundleBgUrl(e.target.value)} placeholder="https://example.com/image.jpg" />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

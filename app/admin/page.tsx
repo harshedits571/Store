@@ -55,13 +55,59 @@ export default function AdminDashboard() {
   const recentOrders = leads.slice(0, 10);
 
 
-  // Placeholder for second chart
-  const retentionData = [
-    { name: 'Feb', rate: 40 }, { name: 'Mar', rate: 75 }, { name: 'Apr', rate: 55 },
-    { name: 'May', rate: 78 }, { name: 'Jun', rate: 60 }, { name: 'Jul', rate: 20 },
-    { name: 'Aug', rate: 58 }, { name: 'Sep', rate: 40 }, { name: 'Oct', rate: 60 },
-    { name: 'Nov', rate: 20 }
-  ];
+  // Calculate Customer Retention for the last 6 months
+  const retentionData: any[] = [];
+  
+  const monthLabels = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    monthLabels.push({
+      label: d.toLocaleDateString('en-US', { month: 'short' }),
+      year: d.getFullYear(),
+      month: d.getMonth()
+    });
+  }
+
+  const firstPurchaseDate: Record<string, Date> = {};
+  leads.forEach(lead => {
+    if (!lead.email || !lead.createdAt) return;
+    const date = new Date(lead.createdAt.seconds * 1000);
+    if (!firstPurchaseDate[lead.email] || date < firstPurchaseDate[lead.email]) {
+      firstPurchaseDate[lead.email] = date;
+    }
+  });
+
+  monthLabels.forEach(({ label, year, month }) => {
+    let totalCustomersThisMonth = 0;
+    let returningCustomersThisMonth = 0;
+    
+    const customersThisMonth = new Set<string>();
+    
+    leads.forEach(lead => {
+      if (!lead.email || !lead.createdAt) return;
+      const date = new Date(lead.createdAt.seconds * 1000);
+      if (date.getFullYear() === year && date.getMonth() === month) {
+        customersThisMonth.add(lead.email);
+      }
+    });
+
+    customersThisMonth.forEach(email => {
+      totalCustomersThisMonth++;
+      const firstDate = firstPurchaseDate[email];
+      if (firstDate && (firstDate.getFullYear() < year || (firstDate.getFullYear() === year && firstDate.getMonth() < month))) {
+        returningCustomersThisMonth++;
+      }
+    });
+
+    const rate = totalCustomersThisMonth > 0 
+      ? Math.round((returningCustomersThisMonth / totalCustomersThisMonth) * 100) 
+      : 0;
+
+    retentionData.push({
+      name: label,
+      rate
+    });
+  });
 
   const dashboardBg = 'var(--bg-primary)';
   const cardBg = 'var(--bg-card)';

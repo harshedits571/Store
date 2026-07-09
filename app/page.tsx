@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useStore } from './context/StoreContext';
 import { useCart } from './context/CartContext';
 import { useCurrency } from './context/CurrencyContext';
+import { CustomLinkProvider } from './context/CustomLinkContext';
+import HeroMockup from './components/HeroMockup';
 import styles from './page.module.css';
 
 /* ═══════════════════════════════════════════════════════════
@@ -104,7 +106,7 @@ export default function Home() {
     return (
       <div className={styles.splash}>
         <div style={{ fontSize: '2rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-1px' }}>
-          Creative Store
+          Crevo Store
         </div>
         <div className={styles.splashBar} />
       </div>
@@ -153,6 +155,8 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+      {/* ── NEW COOL HERO MOCKUP ── */}
+      <HeroMockup />
 
       {/* ── Floating Overlapping Info Cards ── */}
       <div className={styles.infoCardsWrap}>
@@ -248,6 +252,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+
       {/* ════════════════════════════════════════════════════
           BENTO BOX FEATURES GRID
           ════════════════════════════════════════════════════ */}
@@ -256,9 +261,9 @@ export default function Home() {
           <Section>
             <div className={styles.sectionHeader} style={{ textAlign: 'center' }}>
               <h2 className={styles.sectionTitle}>Why Choose Us</h2>
-              <p className={styles.sectionSubtitle} style={{ margin: '0 auto' }}>
+              <div className={styles.categoryTitle}>
                 Premium quality assets designed to elevate your workflow and unlock your creative potential.
-              </p>
+              </div>
             </div>
           </Section>
 
@@ -346,7 +351,14 @@ export default function Home() {
         <div className="container">
           <Section>
             <div className={styles.splitBanner}>
-              <div className={styles.splitBannerLeft}>
+              <div 
+                className={styles.splitBannerLeft} 
+                style={s.bundleBgUrl ? { 
+                  backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${s.bundleBgUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                } : {}}
+              >
                 <h2 className={styles.bundleHeading}>{s.bundleTitle || 'Exclusive Bundle'}</h2>
                 <div className={styles.bundlePriceRow} style={{ marginBottom: '24px' }}>
                   <span className={styles.salePrice}>{formatPrice(getPrice({ price: s.bundlePrice, inrPrice: s.bundleInrPrice }))}</span>
@@ -373,69 +385,85 @@ export default function Home() {
       </section>
 
       {/* ════════════════════════════════════════════════════
+          CREATOR BIOGRAPHY
+          ════════════════════════════════════════════════════ */}
+      {s.bioTitle && (
+        <section className="section" style={{ padding: '100px 24px', background: 'var(--bg-glass)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
+          <div className="container">
+            <Section>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '64px', alignItems: 'center' }}>
+                {s.bioImageUrl && (
+                  <div style={{ flex: '1 1 400px', borderRadius: '32px', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}>
+                    <img src={s.bioImageUrl} alt="Creator" style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover', aspectRatio: '4/5' }} />
+                  </div>
+                )}
+                <div style={{ flex: '1 1 500px' }}>
+                  <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, marginBottom: '32px', letterSpacing: '-0.02em', lineHeight: 1 }}>{s.bioTitle}</h2>
+                  {s.bioText1 && <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '24px' }}>{s.bioText1}</p>}
+                  {s.bioText2 && <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>{s.bioText2}</p>}
+                </div>
+              </div>
+            </Section>
+          </div>
+        </section>
+      )}
+
+      {/* ════════════════════════════════════════════════════
           TESTIMONIALS (Apple Marquee)
           ════════════════════════════════════════════════════ */}
-      <section className="section" style={{ padding: '60px 0', overflow: 'hidden' }}>
-        <Section>
-          <div className={styles.sectionHeader} style={{ textAlign: 'center' }}>
-            <h2 className={styles.sectionTitle}>Loved by Creators</h2>
+      {s.testimonials && s.testimonials.length > 0 && (
+        <section className="section" style={{ padding: '60px 0', overflow: 'hidden' }}>
+          <Section>
+            <div className={styles.sectionHeader} style={{ textAlign: 'center' }}>
+              <h2 className={styles.sectionTitle}>Loved by Creators</h2>
+            </div>
+          </Section>
+          
+          <div className={styles.testimonialsWrap}>
+            <div className={styles.testimonialsTrack}>
+              {[...s.testimonials, ...s.testimonials].map((t: any, i: number) => (
+                <div key={i} className={styles.testimonialCard}>
+                  <div className={styles.testimonialStars}>★★★★★</div>
+                  <p className={styles.testimonialText}>"{t.text}"</p>
+                  <div className={styles.testimonialAuthor}>{t.name} • {t.handle}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </Section>
-        
-        <div className={styles.testimonialsWrap}>
-          <div className={styles.testimonialsTrack}>
-            {[
-              { text: "These assets completely transformed my workflow. The quality is unmatched and it saves me hours of time on every project.", author: "Alex R.", role: "Video Editor" },
-              { text: "I've purchased many bundles before, but this one is actually worth every penny. The glassmorphism UI kit is gorgeous.", author: "Sarah M.", role: "Product Designer" },
-              { text: "Instant delivery and everything just works out of the box. Customer support was also incredibly helpful when I had a question.", author: "David K.", role: "Freelancer" },
-              { text: "These assets completely transformed my workflow. The quality is unmatched and it saves me hours of time on every project.", author: "Alex R.", role: "Video Editor" },
-              { text: "I've purchased many bundles before, but this one is actually worth every penny. The glassmorphism UI kit is gorgeous.", author: "Sarah M.", role: "Product Designer" },
-              { text: "Instant delivery and everything just works out of the box. Customer support was also incredibly helpful when I had a question.", author: "David K.", role: "Freelancer" }
-            ].map((t, i) => (
-              <div key={i} className={styles.testimonialCard}>
-                <div className={styles.testimonialStars}>★★★★★</div>
-                <p className={styles.testimonialText}>"{t.text}"</p>
-                <div className={styles.testimonialAuthor}>{t.author} • {t.role}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ════════════════════════════════════════════════════
           FAQ
           ════════════════════════════════════════════════════ */}
-      <section className="section" style={{ padding: '80px 24px', background: 'var(--bg-secondary)' }}>
-        <div className="container">
-          <Section>
-            <div className={styles.sectionHeader} style={{ textAlign: 'center', marginBottom: '60px' }}>
-              <h2 className={styles.sectionTitle}>Questions?</h2>
-              <p className={styles.sectionSubtitle} style={{ margin: '0 auto' }}>Everything you need to know about our products and billing.</p>
-            </div>
-          </Section>
+      {s.faqs && s.faqs.length > 0 && (
+        <section className="section" style={{ padding: '80px 24px', background: 'var(--bg-secondary)' }}>
+          <div className="container">
+            <Section>
+              <div className={styles.sectionHeader} style={{ textAlign: 'center', marginBottom: '60px' }}>
+                <h2 className={styles.sectionTitle}>Questions?</h2>
+                <p className={styles.sectionSubtitle} style={{ margin: '0 auto' }}>Everything you need to know about our products and billing.</p>
+              </div>
+            </Section>
 
-          <div className={styles.faqList}>
-            {[
-              { q: 'How do I get access after purchasing?', a: 'Immediately after a successful payment, you will be redirected to a success page where you can copy your license keys. We also email you a backup link instantly.' },
-              { q: 'Can I use these assets for commercial projects?', a: 'Yes! All of our premium products come with a commercial license allowing you to use them in client work and monetized projects.' },
-              { q: 'Do you offer refunds?', a: 'Due to the digital nature of our products, all sales are final. If you have technical issues, our support team will help you resolve them within 24 hours.' },
-              { q: 'Are lifetime updates really forever?', a: 'Yes. If you purchase the bundle or a product that includes lifetime updates, you will never be charged for future versions of that product.' }
-            ].map((faq, i) => (
-              <Section key={i} delay={i * 0.1}>
-                <div className={`${styles.faqItem} ${openFaq === i ? styles.faqOpen : ''}`}>
-                  <button className={styles.faqQuestion} onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                    <span>{faq.q}</span>
-                    <span className={styles.faqIcon}>+</span>
-                  </button>
-                  <div className={styles.faqAnswer}>
-                    <p>{faq.a}</p>
+            <div className={styles.faqList}>
+              {s.faqs.map((faq: any, i: number) => (
+                <Section key={i} delay={i * 0.1}>
+                  <div className={`${styles.faqItem} ${openFaq === i ? styles.faqOpen : ''}`}>
+                    <button className={styles.faqQuestion} onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                      <span>{faq.q}</span>
+                      <span className={styles.faqIcon}>+</span>
+                    </button>
+                    <div className={styles.faqAnswer}>
+                      <p>{faq.a}</p>
+                    </div>
                   </div>
-                </div>
-              </Section>
-            ))}
+                </Section>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
     </div>
   );

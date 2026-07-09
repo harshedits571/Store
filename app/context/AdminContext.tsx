@@ -11,13 +11,14 @@ type AdminContextType = {
   licenses: any[];
   promocodes: any[];
   customLinks: any[];
+  articles: any[];
   initialLoading: boolean;
 };
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export function AdminProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   
   const [products, setProducts] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
@@ -25,6 +26,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [licenses, setLicenses] = useState<any[]>([]);
   const [promocodes, setPromocodes] = useState<any[]>([]);
   const [customLinks, setCustomLinks] = useState<any[]>([]);
+  const [articles, setArticles] = useState<any[]>([]);
   
   // Track loading state for each collection
   const [loadingStates, setLoadingStates] = useState({
@@ -33,15 +35,27 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     customers: true,
     licenses: true,
     promocodes: true,
-    customLinks: true
+    customLinks: true,
+    articles: true
   });
 
   const initialLoading = Object.values(loadingStates).some(state => state === true);
 
   useEffect(() => {
-    // We only attach listeners if there's a user, otherwise we don't fetch admin data
-    // (Actual permission checking should happen in Firestore Rules or layout router)
-    if (!user) return;
+    // We only attach listeners if there's a user AND they are an admin
+    if (!user || !isAdmin) {
+      // If not admin, stop loading immediately
+      setLoadingStates({
+        products: false,
+        leads: false,
+        customers: false,
+        licenses: false,
+        promocodes: false,
+        customLinks: false,
+        articles: false
+      });
+      return;
+    }
 
     const unsubs: (() => void)[] = [];
 
@@ -76,18 +90,24 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     }));
 
     // Custom Links
-    unsubs.push(onSnapshot(collection(db, "custom_links"), (snap) => {
-      setCustomLinks(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    unsubs.push(onSnapshot(collection(db, 'custom_links'), (snapshot) => {
+      setCustomLinks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       setLoadingStates(prev => ({ ...prev, customLinks: false }));
+    }));
+
+    // Articles
+    unsubs.push(onSnapshot(query(collection(db, 'articles'), orderBy('createdAt', 'desc')), (snapshot) => {
+      setArticles(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setLoadingStates(prev => ({ ...prev, articles: false }));
     }));
 
     return () => {
       unsubs.forEach(unsub => unsub());
     };
-  }, [user]);
+  }, [user, isAdmin]);
 
   return (
-    <AdminContext.Provider value={{ products, leads, customers, licenses, promocodes, customLinks, initialLoading }}>
+    <AdminContext.Provider value={{ products, leads, customers, licenses, promocodes, customLinks, articles, initialLoading }}>
       {children}
     </AdminContext.Provider>
   );

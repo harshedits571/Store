@@ -6,6 +6,9 @@ import { useAdmin } from '../../context/AdminContext';
 export default function LicensesPage() {
   const { licenses } = useAdmin();
 
+  // Sort licenses by date descending (newest first)
+  const sortedLicenses = [...licenses].sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
   const handleResetHardware = async (id: string) => {
     if (confirm("Reset the hardware ID so the user can activate on a new machine?")) {
       await updateDoc(doc(db, "licenses", id), { machineId: null });
@@ -27,20 +30,27 @@ export default function LicensesPage() {
           <thead>
             <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-subtle)' }}>
               <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>License Key</th>
-              <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Email</th>
+              <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Product</th>
+              <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Email / Date</th>
               <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Status</th>
               <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Machine ID</th>
               <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {licenses.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: '16px', textAlign: 'center' }}>No licenses generated yet.</td></tr>
+            {sortedLicenses.length === 0 ? (
+              <tr><td colSpan={6} style={{ padding: '16px', textAlign: 'center' }}>No licenses generated yet.</td></tr>
             ) : (
-              licenses.map((lic) => (
+              sortedLicenses.map((lic) => (
                 <tr key={lic.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                   <td style={{ padding: '16px', fontWeight: 500, fontFamily: 'monospace' }}>{lic.licenseKey}</td>
-                  <td style={{ padding: '16px' }}>{lic.email}</td>
+                  <td style={{ padding: '16px' }}>{lic.productName || lic.productId || 'Unknown'}</td>
+                  <td style={{ padding: '16px' }}>
+                    <div>{lic.email}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      {lic.createdAt ? new Date(lic.createdAt.seconds * 1000).toLocaleString() : 'N/A'}
+                    </div>
+                  </td>
                   <td style={{ padding: '16px' }}>
                     <span style={{ color: lic.status === 'active' ? 'var(--success)' : 'var(--danger)' }}>
                       {lic.status.toUpperCase()}

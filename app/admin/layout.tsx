@@ -15,12 +15,46 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const adminData = useAdmin();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      
+      if (!currentUser) {
+        setUser(null);
+        setLoading(false);
+        if (pathname !== '/admin/login') {
+          router.push('/admin/login');
+        }
+        return;
+      }
+
+      // Strict Admin Check against Firestore
+      try {
+        const { doc, getDoc } = await import('firebase/firestore');
+        const { db } = await import('@/lib/firebase');
+        const adminDoc = await getDoc(doc(db, 'admins', currentUser.email || ''));
+        
+        if (!adminDoc.exists()) {
+          await signOut(auth);
+          setUser(null);
+          setLoading(false);
+          if (pathname !== '/admin/login') {
+            router.push('/admin/login');
+          }
+          return;
+        }
+      } catch (e) {
+        console.error("Admin check failed", e);
+        await signOut(auth);
+        setUser(null);
+        setLoading(false);
+        router.push('/admin/login');
+        return;
+      }
+
       setUser(currentUser);
       setLoading(false);
       
-      if (!currentUser && pathname !== '/admin/login') {
-        router.push('/admin/login');
+      if (pathname === '/admin/login') {
+        router.push('/admin');
       }
     });
 

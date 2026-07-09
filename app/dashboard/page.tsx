@@ -8,13 +8,14 @@ import Link from 'next/link';
 import { useCurrency } from '../context/CurrencyContext';
 
 export default function CustomerDashboard() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const { formatPrice } = useCurrency();
   const router = useRouter();
 
   const [customer, setCustomer] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [licenses, setLicenses] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Tabs
@@ -38,12 +39,19 @@ export default function CustomerDashboard() {
     let customerLoaded = false;
     let ordersLoaded = false;
     let licensesLoaded = false;
+    let productsLoaded = false;
     
     const checkLoading = () => {
-      if (customerLoaded && ordersLoaded && licensesLoaded) {
+      if (customerLoaded && ordersLoaded && licensesLoaded && productsLoaded) {
         setLoading(false);
       }
     };
+
+    const unsubProducts = onSnapshot(collection(db, "products"), (productSnap) => {
+      setAllProducts(productSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      productsLoaded = true;
+      checkLoading();
+    });
 
     const unsubCustomer = onSnapshot(doc(db, "customers", user.email || ''), (docSnap) => {
       if (docSnap.exists()) {
@@ -77,6 +85,7 @@ export default function CustomerDashboard() {
       unsubCustomer();
       unsubOrders();
       unsubLicenses();
+      unsubProducts();
     };
   }, [user, authLoading, router]);
 
@@ -119,7 +128,7 @@ export default function CustomerDashboard() {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 600, margin: '0' }}>Profile</h1>
-          <button onClick={() => useAuth().logout()} className="btn-secondary" style={{ padding: '8px 16px', color: '#F87171', borderColor: 'rgba(248,113,113,0.3)' }}>Sign Out</button>
+          <button onClick={() => logout()} className="btn-secondary" style={{ padding: '8px 16px', color: '#F87171', borderColor: 'rgba(248,113,113,0.3)' }}>Sign Out</button>
         </div>
       </div>
 
@@ -328,6 +337,19 @@ export default function CustomerDashboard() {
                                         {order.currency === 'INR' ? `₹${Number(item.price || 0).toFixed(2)}` : `$${Number(item.price || 0).toFixed(2)}`}
                                       </div>
                                     )}
+                                    {/* Download Button if applicable */}
+                                    {allProducts.find(p => p.id === item.id)?.downloadUrl && (
+                                      <a 
+                                        href={allProducts.find(p => p.id === item.id)?.downloadUrl} 
+                                        target="_blank" 
+                                        rel="noreferrer"
+                                        className="btn-secondary" 
+                                        style={{ padding: '4px 12px', fontSize: '0.75rem', textDecoration: 'none', marginLeft: '16px' }}
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        Download
+                                      </a>
+                                    )}
                                   </div>
                                 ))}
                               </div>
@@ -356,7 +378,19 @@ export default function CustomerDashboard() {
                       {lic.licenseKey}
                     </div>
                   </div>
-                  <button className="btn-primary" style={{ padding: '10px 24px' }}>Download Asset</button>
+                  {allProducts.find(p => p.id === lic.productId)?.downloadUrl ? (
+                    <a 
+                      href={allProducts.find(p => p.id === lic.productId)?.downloadUrl} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="btn-primary" 
+                      style={{ padding: '10px 24px', textDecoration: 'none' }}
+                    >
+                      Download Asset
+                    </a>
+                  ) : (
+                    <button className="btn-secondary" disabled style={{ padding: '10px 24px', opacity: 0.5 }}>No Asset Available</button>
+                  )}
                 </div>
               ))
             )}

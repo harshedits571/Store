@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useStore } from '../context/StoreContext';
+import { useCustomLink } from '../context/CustomLinkContext';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -13,11 +14,12 @@ export default function CheckoutPage() {
   const { user, signInWithGoogle, loading: authLoading } = useAuth();
   const { currency, getPrice, formatPrice } = useCurrency();
   const { products } = useStore();
+  const { activeCustomLink, applyCustomPrice } = useCustomLink();
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   // Calculate exact total based on region
-  const dynamicTotal = cart.reduce((sum, item) => sum + getPrice(item), 0);
+  const dynamicTotal = cart.reduce((sum, item) => sum + applyCustomPrice(item.id, getPrice(item), currency), 0);
 
   // Checkout Form State
   const [customerName, setCustomerName] = useState('');
@@ -39,11 +41,19 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      // 1. Create order on our backend
+      // 1. Create order on our backend and save lead as 'interested'
       const orderRes = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: dynamicTotal, currency })
+        body: JSON.stringify({ 
+          amount: dynamicTotal, 
+          currency,
+          email: user.email,
+          name: customerName,
+          phone: customerPhone,
+          cart: cart,
+          customLinkCode: activeCustomLink?.id || null
+        })
       });
       const order = await orderRes.json();
       
@@ -56,7 +66,7 @@ export default function CheckoutPage() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
         amount: order.amount, 
         currency: order.currency,
-        name: "Creative Store",
+        name: "Crevo Store",
         description: `Purchase of ${cart.length} items`,
         order_id: order.id, 
         handler: async function (response: any) {
@@ -73,9 +83,11 @@ export default function CheckoutPage() {
                 cart: cart, // Pass the whole cart array
                 amount: dynamicTotal,
                 currency: currency,
+                orderId: order.leadId, // Passing the lead ID
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature
+                razorpay_signature: response.razorpay_signature,
+                customLinkCode: activeCustomLink?.id || null
               })
             });
             
@@ -185,7 +197,7 @@ export default function CheckoutPage() {
                       <h4 style={{ fontWeight: 500 }}>{item.name}</h4>
                       <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{item.category}</span>
                     </div>
-                    <span style={{ fontWeight: 500 }}>{formatPrice(getPrice(item))}</span>
+                    <span style={{ fontWeight: 500 }}>{formatPrice(applyCustomPrice(item.id, getPrice(item), currency))}</span>
                   </div>
                   {/* Display bundle sub-items */}
                   {item.productIds && item.productIds.length > 0 && (

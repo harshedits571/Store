@@ -47,8 +47,10 @@ export default function OrdersPage() {
                   </td>
                   <td style={{ padding: '16px' }}>
                     <span style={{ 
-                      background: order.status === 'verified' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                      color: order.status === 'verified' ? 'var(--success)' : 'var(--warning)',
+                      background: order.status === 'verified' ? 'rgba(16, 185, 129, 0.1)' : 
+                                  order.status === 'interested' ? 'rgba(236, 72, 153, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                      color: order.status === 'verified' ? 'var(--success)' : 
+                             order.status === 'interested' ? '#ec4899' : 'var(--warning)',
                       padding: '4px 12px', 
                       borderRadius: '100px', 
                       fontSize: '0.75rem',

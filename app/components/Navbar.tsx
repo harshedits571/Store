@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from 'next-themes';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import styles from './Navbar.module.css';
 
 // SVG Icons
@@ -24,17 +27,49 @@ const CartIcon = () => (
   </svg>
 );
 
-export default function Navbar() {
-  const { cart, isCartOpen, setCartOpen } = useCart();
-  const { user, signInWithGoogle, logout } = useAuth();
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const ThemeToggle = () => {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return <button className={styles.iconBtn} aria-label="Toggle Theme" style={{width: 28, height: 28}}></button>;
+
+  return (
+    <button 
+      className={styles.iconBtn} 
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      aria-label="Toggle Theme"
+    >
+      {theme === 'dark' ? (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18.75a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75zM6.166 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM2.25 12a.75.75 0 01.75-.75H5.25a.75.75 0 010 1.5H3a.75.75 0 01-.75-.75zM6.166 5.106a.75.75 0 00-1.06 1.06l1.59 1.591a.75.75 0 101.061-1.06l-1.59-1.591z" />
+        </svg>
+      ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" />
+        </svg>
+      )}
+    </button>
+  );
+};
+
+export default function Navbar() {
+  const { cart, isCartOpen, setCartOpen } = useCart();
+  const { user, isAdmin, signInWithGoogle, logout } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -43,6 +78,11 @@ export default function Navbar() {
       <div className={`${styles.navbarWrapper} ${scrolled ? styles.navbarWrapperScrolled : ''}`}>
         <nav className={styles.navbar}>
           
+          {/* Left Logo */}
+          <Link href="/" className={styles.navLogo}>
+            <img src="/logo.png" alt="Logo" />
+          </Link>
+
           {/* Centered Links (like the reference) */}
           <div className={styles.navLinks}>
             <Link href="/" className={styles.navLink}>Home</Link>
@@ -50,10 +90,14 @@ export default function Navbar() {
             <Link href="#contact" className={styles.navLink}>Contact</Link>
             <Link href="#plugin" className={styles.navLink}>Plugin</Link>
             {user && <Link href="/dashboard" className={styles.navLink} style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>Dashboard</Link>}
+            {isAdmin && (
+              <Link href="/admin" className={styles.navLink} style={{ color: 'var(--warning)', fontWeight: 600 }}>Admin</Link>
+            )}
           </div>
 
           {/* Right Icons */}
           <div className={styles.navIcons}>
+            <ThemeToggle />
             <button className={styles.iconBtn} aria-label="Search">
               <SearchIcon />
             </button>
@@ -71,7 +115,7 @@ export default function Navbar() {
 
             <button onClick={() => setCartOpen(!isCartOpen)} className={styles.iconBtn} aria-label="Cart">
               <CartIcon />
-              {cart.length > 0 && (
+              {mounted && cart.length > 0 && (
                 <span className={styles.cartBadge}>{cart.length}</span>
               )}
             </button>
@@ -97,6 +141,9 @@ export default function Navbar() {
         {user ? (
           <>
             <Link href="/dashboard" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
+            {isAdmin && (
+              <Link href="/admin" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--warning)' }}>Admin</Link>
+            )}
             <button onClick={() => { logout(); setMobileMenuOpen(false); }} className={styles.mobileNavLink}>Logout</button>
           </>
         ) : (

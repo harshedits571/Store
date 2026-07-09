@@ -17,6 +17,14 @@ export default function AdminLogin() {
     setError('');
     
     try {
+      const { doc, getDoc } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+      const adminDoc = await getDoc(doc(db, 'admins', email.toLowerCase().trim()));
+      
+      if (!adminDoc.exists()) {
+        throw new Error('Unauthorized Access. You are not an administrator.');
+      }
+
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/admin'); // Redirect to dashboard on success
     } catch (err: any) {
@@ -30,7 +38,7 @@ export default function AdminLogin() {
       <div className="glass-panel animate-fade-in" style={{ padding: '40px', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         <div style={{ textAlign: 'center' }}>
           <h1 className="h2 mb-4">Admin Login</h1>
-          <p className="text-secondary">Sign in to manage the Creative Store.</p>
+          <p className="text-secondary">Sign in to manage the Crevo Store.</p>
         </div>
 
         {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', padding: '12px', borderRadius: '8px', fontSize: '0.875rem' }}>{error}</div>}

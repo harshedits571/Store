@@ -116,7 +116,9 @@ export default function CustomerDetailsPage({
                 <div style={{ color: textMuted, fontSize: '0.75rem' }}>Orders</div>
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '1.125rem' }}>${Number(customer.totalSpent || 0).toFixed(2)}</div>
+                <div style={{ fontWeight: 600, fontSize: '1.125rem' }}>
+                  {orders[0]?.currency === 'INR' ? '₹' : '$'}{Number(customer.totalSpent || 0).toFixed(2)}
+                </div>
                 <div style={{ color: textMuted, fontSize: '0.75rem' }}>Spent</div>
               </div>
               <div>
@@ -197,7 +199,9 @@ export default function CustomerDetailsPage({
                   orders.map((order, i) => (
                     <tr key={order.id} style={{ borderBottom: i === orders.length - 1 ? 'none' : `1px solid ${borderColor}` }}>
                       <td style={{ padding: '16px 24px', color: '#3B82F6' }}>#{order.id.substring(0, 6)}</td>
-                      <td style={{ padding: '16px 24px', fontWeight: 500, color: '#E5E7EB' }}>${Number(order.amount).toFixed(2)}</td>
+                      <td style={{ padding: '16px 24px', fontWeight: 500, color: '#E5E7EB' }}>
+                        {order.currency === 'INR' ? '₹' : '$'}{Number(order.amount).toFixed(2)}
+                      </td>
                       <td style={{ padding: '16px 24px' }}>
                         <span style={{ background: 'rgba(52, 211, 153, 0.1)', color: '#34D399', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>
                           PAID ✓
