@@ -6,13 +6,18 @@ import { getAuth } from 'firebase-admin/auth';
 if (!getApps().length) {
   try {
     if (process.env.FIREBASE_PROJECT_ID) {
+      let pk = process.env.FIREBASE_PRIVATE_KEY || '';
+      // Handle Vercel escaping issues
+      if (pk.startsWith('"') && pk.endsWith('"')) {
+        pk = pk.substring(1, pk.length - 1);
+      }
+      pk = pk.replace(/\\n/g, '\n');
+
       initializeApp({
         credential: cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
           clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          // Private keys might contain escaped newlines.
-          // Replace \\n with actual \n for Firebase Admin to parse correctly
-          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+          privateKey: pk,
         }),
       });
       console.log('Firebase Admin initialized successfully.');
@@ -25,5 +30,15 @@ if (!getApps().length) {
   }
 }
 
-export const adminDb = getFirestore();
-export const adminAuth = getAuth();
+let db: any;
+let auth: any;
+
+try {
+  db = getFirestore();
+  auth = getAuth();
+} catch (error) {
+  console.error("Failed to get Firestore/Auth instance:", error);
+}
+
+export const adminDb = db;
+export const adminAuth = auth;
