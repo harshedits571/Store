@@ -25,5 +25,12 @@ if (!getApps().length) {
   }
 }
 
-export const adminDb = getFirestore();
-export const adminAuth = getAuth();
+export let adminDb: any = null;
+export let adminAuth: any = null;
+
+try {
+  adminDb = getFirestore();
+  adminAuth = getAuth();
+} catch (error) {
+  console.error("Failed to get Firestore/Auth instances:", error);
+}
