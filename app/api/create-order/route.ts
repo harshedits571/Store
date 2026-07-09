@@ -4,13 +4,6 @@ import { adminDb } from '@/lib/firebaseAdmin';
 
 export async function POST(request: Request) {
   try {
-    if (!process.env.FIREBASE_PRIVATE_KEY || !process.env.FIREBASE_PROJECT_ID) {
-      return NextResponse.json({ error: "Server Error: Firebase variables are missing in Vercel Environment Variables." }, { status: 500 });
-    }
-    if (!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-      return NextResponse.json({ error: "Server Error: Razorpay keys are missing in Vercel Environment Variables." }, { status: 500 });
-    }
-
     const { amount: clientAmount, currency = "INR", email, name, phone, cart, customLinkCode } = await request.json();
 
     if (!cart || !Array.isArray(cart) || cart.length === 0) {
