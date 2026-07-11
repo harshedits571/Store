@@ -10,9 +10,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
-    // 1. Calculate actual server-side price
-    let calculatedAmount = 0;
-    const purchasedItems = [];
 
     // Helper to calculate exact price matching CurrencyContext
     const getActualPrice = (item: any, curr: string) => {
@@ -27,20 +24,55 @@ export async function POST(request: Request) {
       return 0;
     };
 
+    // Fetch custom link data if provided
+    let linkData: any = null;
+    if (customLinkCode) {
+      const cleanCode = customLinkCode.toUpperCase();
+      const linkDoc = await adminDb.collection('custom_links').doc(cleanCode).get();
+      if (linkDoc.exists) {
+        const data = linkDoc.data();
+        if (data?.active && (data?.maxRedemptions === 0 || (data?.currentRedemptions || 0) < (data?.maxRedemptions || 0))) {
+          linkData = data;
+        }
+      }
+    }
+
+    const applyLinkDiscount = (productId: string, currentPrice: number) => {
+      if (!linkData) return currentPrice;
+      if (linkData.products && linkData.products.length > 0 && !linkData.products.includes(productId)) {
+        return currentPrice;
+      }
+      if (linkData.pricingMode === 'discount') {
+        return currentPrice * (1 - ((linkData.discountPercent || 0) / 100));
+      } else if (linkData.pricingMode === 'fixed') {
+        const fixed = linkData.fixedPrices?.[productId];
+        if (fixed) {
+          return currency === 'INR' ? (fixed.inr || 0) : (fixed.usd || 0);
+        }
+      }
+      return currentPrice;
+    };
+
+    // 1. Calculate actual server-side price
+    let calculatedAmount = 0;
+    const purchasedItems = [];
+
     // Check if it's the bundle
-    const hasBundle = cart.some(item => item.id === 'bundle');
+    const hasBundle = cart.some((item: any) => item.id === 'bundle');
     
     if (hasBundle) {
       const settingsDoc = await adminDb.collection('settings').doc('homepage').get();
       const settings = settingsDoc.data();
-      const bundlePrice = currency === 'INR' ? (settings?.bundleInrPrice || settings?.bundlePrice * 84) : (settings?.bundlePrice || 195);
-      calculatedAmount += Number(bundlePrice);
+      let bundlePrice = currency === 'INR' ? (settings?.bundleInrPrice || settings?.bundlePrice * 84) : (settings?.bundlePrice || 195);
+      
+      bundlePrice = applyLinkDiscount('bundle', Number(bundlePrice));
+      calculatedAmount += bundlePrice;
       
       purchasedItems.push({
         id: 'bundle',
         name: settings?.bundleTitle || 'Premium Bundle',
         category: 'Bundle',
-        price: Number(bundlePrice)
+        price: bundlePrice
       });
     } else {
       // Regular products
@@ -49,38 +81,17 @@ export async function POST(request: Request) {
         const productDoc = await adminDb.collection('products').doc(item.id).get();
         if (productDoc.exists) {
           const productData = productDoc.data();
-          const itemPrice = getActualPrice(productData, currency);
-          calculatedAmount += Number(itemPrice);
+          let itemPrice = getActualPrice(productData, currency);
+          
+          itemPrice = applyLinkDiscount(productDoc.id, itemPrice);
+          calculatedAmount += itemPrice;
+          
           purchasedItems.push({
             id: productDoc.id,
             name: productData?.name || item.name,
             category: productData?.category || item.category,
-            price: Number(itemPrice)
+            price: itemPrice
           });
-        }
-      }
-    }
-
-    // Apply custom link discount if valid
-    if (customLinkCode) {
-      const linkQuery = await adminDb.collection('custom_links').where('linkPath', '==', customLinkCode).get();
-      if (!linkQuery.empty) {
-        const linkData = linkQuery.docs[0].data();
-        if (!linkData.paused && (linkData.limit === 0 || linkData.claims < linkData.limit)) {
-          // It's a valid link, check if it applies
-          const appliesToAll = !linkData.productId;
-          const appliesToBundle = linkData.productId === 'bundle' && hasBundle;
-          const appliesToItem = !hasBundle && cart.some(i => i.id === linkData.productId);
-
-          if (appliesToAll || appliesToBundle || appliesToItem) {
-            if (linkData.discountType === 'percentage') {
-              calculatedAmount = calculatedAmount - (calculatedAmount * (linkData.discountValue / 100));
-            } else if (linkData.discountType === 'fixed') {
-              // Assuming fixed discount is in USD, convert to INR if necessary (rough estimate 80)
-              const discount = currency === 'INR' ? linkData.discountValue * 80 : linkData.discountValue;
-              calculatedAmount = Math.max(0, calculatedAmount - discount);
-            }
-          }
         }
       }
     }

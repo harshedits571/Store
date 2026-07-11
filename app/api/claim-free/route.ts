@@ -36,6 +36,35 @@ export async function POST(request: Request) {
       return 0;
     };
 
+    // Fetch custom link data if provided
+    let linkData: any = null;
+    if (customLinkCode) {
+      const cleanCode = customLinkCode.toUpperCase();
+      const linkDoc = await adminDb.collection('custom_links').doc(cleanCode).get();
+      if (linkDoc.exists) {
+        const data = linkDoc.data();
+        if (data?.active && (data?.maxRedemptions === 0 || (data?.currentRedemptions || 0) < (data?.maxRedemptions || 0))) {
+          linkData = data;
+        }
+      }
+    }
+
+    const applyLinkDiscount = (productId: string, currentPrice: number) => {
+      if (!linkData) return currentPrice;
+      if (linkData.products && linkData.products.length > 0 && !linkData.products.includes(productId)) {
+        return currentPrice;
+      }
+      if (linkData.pricingMode === 'discount') {
+        return currentPrice * (1 - ((linkData.discountPercent || 0) / 100));
+      } else if (linkData.pricingMode === 'fixed') {
+        const fixed = linkData.fixedPrices?.[productId];
+        if (fixed) {
+          return currency === 'INR' ? (fixed.inr || 0) : (fixed.usd || 0);
+        }
+      }
+      return currentPrice;
+    };
+
     // 1. Calculate actual server-side price to verify it is exactly 0
     let calculatedAmount = 0;
     const purchasedItems = [];
@@ -45,14 +74,16 @@ export async function POST(request: Request) {
     if (hasBundle) {
       const settingsDoc = await adminDb.collection('settings').doc('homepage').get();
       const settings = settingsDoc.data();
-      const bundlePrice = currency === 'INR' ? (settings?.bundleInrPrice || settings?.bundlePrice * 84) : (settings?.bundlePrice || 195);
-      calculatedAmount += Number(bundlePrice);
+      let bundlePrice = currency === 'INR' ? (settings?.bundleInrPrice || settings?.bundlePrice * 84) : (settings?.bundlePrice || 195);
+      
+      bundlePrice = applyLinkDiscount('bundle', Number(bundlePrice));
+      calculatedAmount += bundlePrice;
       
       purchasedItems.push({
         id: 'bundle',
         name: settings?.bundleTitle || 'Premium Bundle',
         category: 'Bundle',
-        price: Number(bundlePrice)
+        price: bundlePrice
       });
     } else {
       for (const item of cart) {
@@ -61,36 +92,17 @@ export async function POST(request: Request) {
         if (productDoc.exists) {
           const productData = productDoc.data();
           let itemPrice = getActualPrice(productData, currency);
-          calculatedAmount += Number(itemPrice);
+          
+          itemPrice = applyLinkDiscount(productDoc.id, itemPrice);
+          calculatedAmount += itemPrice;
+          
           purchasedItems.push({
             id: productDoc.id,
             name: productData?.name || item.name,
             category: productData?.category || item.category,
-            price: Number(itemPrice),
+            price: itemPrice,
             requiresLicense: productData?.requiresLicense
           });
-        }
-      }
-    }
-
-    // Apply custom link discount if valid
-    if (customLinkCode) {
-      const linkQuery = await adminDb.collection('custom_links').where('linkPath', '==', customLinkCode).get();
-      if (!linkQuery.empty) {
-        const linkData = linkQuery.docs[0].data();
-        if (!linkData.paused && (linkData.limit === 0 || linkData.claims < linkData.limit)) {
-          const appliesToAll = !linkData.productId;
-          const appliesToBundle = linkData.productId === 'bundle' && hasBundle;
-          const appliesToItem = !hasBundle && cart.some((i: any) => i.id === linkData.productId);
-
-          if (appliesToAll || appliesToBundle || appliesToItem) {
-            if (linkData.discountType === 'percentage') {
-              calculatedAmount = calculatedAmount - (calculatedAmount * (linkData.discountValue / 100));
-            } else if (linkData.discountType === 'fixed') {
-              const discount = currency === 'INR' ? linkData.discountValue * 84 : linkData.discountValue;
-              calculatedAmount = Math.max(0, calculatedAmount - discount);
-            }
-          }
         }
       }
     }
