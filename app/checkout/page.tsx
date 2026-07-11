@@ -13,7 +13,7 @@ export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
   const { user, signInWithGoogle, loading: authLoading } = useAuth();
   const { currency, getPrice, formatPrice } = useCurrency();
-  const { products } = useStore();
+  const { homepageSettings: s, products } = useStore();
   const { activeCustomLink, applyCustomPrice } = useCustomLink();
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -87,83 +87,69 @@ export default function CheckoutPage() {
       const order = await orderRes.json();
       
       if (!order || !order.id) {
-        throw new Error("Could not create Razorpay order.");
+        throw new Error(order.error || "Could not create Razorpay order.");
       }
 
       // 2. Initialize Razorpay Checkout
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
-        amount: order.amount, 
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Enter the Key ID generated from the Dashboard
+        amount: order.amount,
         currency: order.currency,
-        name: "Crevo Store",
-        description: `Purchase of ${cart.length} items`,
+        name: s.heroTitleLine1 || "Crevo Store",
+        description: "Premium Assets",
         order_id: order.id, 
         handler: async function (response: any) {
-          // 3. Verify payment and generate licenses
-          setVerifying(true);
           try {
+            setVerifying(true);
             const verifyRes = await fetch('/api/generate-license', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                email: user.email,
-                name: customerName,
-                phone: customerPhone,
-                cart: cart, // Pass the whole cart array
-                amount: dynamicTotal,
-                currency: currency,
-                orderId: order.leadId, // Passing the lead ID
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_signature: response.razorpay_signature,
+                leadRefId: order.leadId,
+                email: user.email,
+                name: customerName,
+                cart: cart,
+                amount: dynamicTotal,
+                currency: currency,
                 customLinkCode: activeCustomLink?.id || null
               })
             });
-            
             const verifyData = await verifyRes.json();
             
             if (verifyData.success) {
-              clearCart(); // Empty cart on success
+              clearCart();
               router.push(`/success?orderId=${verifyData.orderId}`);
             } else {
-              alert("Payment verification failed: " + verifyData.error);
-              setLoading(false);
+              setPaymentError("Payment verified, but failed to generate license: " + verifyData.error);
             }
-          } catch (err) {
-            console.error("Verification error:", err);
-            alert("Error verifying payment.");
-            setLoading(false);
+          } catch (e: any) {
+            setPaymentError("Error during license generation. Please contact support.");
+          } finally {
+            setVerifying(false);
           }
         },
         prefill: {
           name: customerName,
-          email: user.email || '',
+          email: user.email,
           contact: customerPhone
         },
         theme: {
-          color: "#8B5CF6"
-        },
-        modal: {
-          ondismiss: function() {
-            setLoading(false);
-          }
+          color: "#7a5af8" // var(--accent-primary)
         }
       };
 
-      const rzp = new (window as any).Razorpay(options);
-      
-      rzp.on('payment.failed', function (response: any) {
-        setPaymentError(`Payment failed: ${response.error.description}. Please try again or contact your bank.`);
-        setLoading(false);
-        setVerifying(false);
+      const rzp1 = new (window as any).Razorpay(options);
+      rzp1.on('payment.failed', function (response: any){
+        setPaymentError(`Payment failed: ${response.error.description}`);
       });
-      
-      rzp.open();
-      
-    } catch (error: any) {
-      console.error(error);
-      setPaymentError(error.message || "An error occurred initializing checkout.");
-      setLoading(false);
+      rzp1.open();
+
+    } catch (err: any) {
+      setPaymentError(err.message || "An error occurred during checkout.");
+    } finally {  setLoading(false);
     }
   };
 

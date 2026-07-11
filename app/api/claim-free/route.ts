@@ -23,6 +23,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
+    // Helper to calculate exact price matching CurrencyContext
+    const getActualPrice = (item: any, curr: string) => {
+      if (curr === 'INR') {
+        if (item.inrSalePrice !== undefined && item.inrSalePrice !== null && Number(item.inrSalePrice) >= 0) return Number(item.inrSalePrice);
+        if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) >= 0) return Number(item.inrPrice);
+        if (item.salePrice !== undefined && item.salePrice !== null && Number(item.salePrice) >= 0) return Number(item.salePrice) * 84;
+        return (Number(item.price) || 0) * 84;
+      }
+      if (item.salePrice !== undefined && item.salePrice !== null && Number(item.salePrice) >= 0) return Number(item.salePrice);
+      if (item.price !== undefined && item.price !== null && Number(item.price) >= 0) return Number(item.price);
+      return 0;
+    };
+
     // 1. Calculate actual server-side price to verify it is exactly 0
     let calculatedAmount = 0;
     const purchasedItems = [];
@@ -47,12 +60,7 @@ export async function POST(request: Request) {
         const productDoc = await adminDb.collection('products').doc(item.id).get();
         if (productDoc.exists) {
           const productData = productDoc.data();
-          let itemPrice = 0;
-          if (currency === 'INR') {
-            itemPrice = productData?.inrSalePrice || productData?.inrPrice || (productData?.salePrice || productData?.price) * 84;
-          } else {
-            itemPrice = productData?.salePrice || productData?.price || (productData?.inrSalePrice || productData?.inrPrice) / 84 || 0;
-          }
+          let itemPrice = getActualPrice(productData, currency);
           calculatedAmount += Number(itemPrice);
           purchasedItems.push({
             id: productDoc.id,

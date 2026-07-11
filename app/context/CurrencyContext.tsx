@@ -67,7 +67,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     const baseUsd = Number(item.price) || 0;
     
     if (currency === 'INR') {
-      if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) > 0) {
+      if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) >= 0) {
         return Number(item.inrPrice);
       }
       return baseUsd * INR_MULTIPLIER;
@@ -77,7 +77,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       return baseUsd;
     }
     // Fallback: if USD price is missing but INR is provided
-    if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) > 0) {
+    if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) >= 0) {
       return Number(item.inrPrice) / INR_MULTIPLIER;
     }
     return 0;
@@ -85,31 +85,31 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
   const getPrice = (item: PriceableItem): number => {
     if (currency === 'INR') {
-      if (item.inrSalePrice !== undefined && item.inrSalePrice !== null && Number(item.inrSalePrice) > 0) {
+      if (item.inrSalePrice !== undefined && item.inrSalePrice !== null && Number(item.inrSalePrice) >= 0) {
         return Number(item.inrSalePrice);
       }
-      if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) > 0) {
+      if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) >= 0) {
         return Number(item.inrPrice);
       }
       // Fallbacks
-      if (item.salePrice !== undefined && item.salePrice !== null && Number(item.salePrice) > 0) {
+      if (item.salePrice !== undefined && item.salePrice !== null && Number(item.salePrice) >= 0) {
         return Number(item.salePrice) * INR_MULTIPLIER;
       }
       return (Number(item.price) || 0) * INR_MULTIPLIER;
     }
     
     // USD
-    if (item.salePrice !== undefined && item.salePrice !== null && Number(item.salePrice) > 0) {
+    if (item.salePrice !== undefined && item.salePrice !== null && Number(item.salePrice) >= 0) {
       return Number(item.salePrice);
     }
-    if (item.price !== undefined && item.price !== null && Number(item.price) > 0) {
+    if (item.price !== undefined && item.price !== null && Number(item.price) >= 0) {
       return Number(item.price);
     }
     // Fallback to INR converted to USD if missing
-    if (item.inrSalePrice !== undefined && item.inrSalePrice !== null && Number(item.inrSalePrice) > 0) {
+    if (item.inrSalePrice !== undefined && item.inrSalePrice !== null && Number(item.inrSalePrice) >= 0) {
       return Number(item.inrSalePrice) / INR_MULTIPLIER;
     }
-    if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) > 0) {
+    if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) >= 0) {
       return Number(item.inrPrice) / INR_MULTIPLIER;
     }
     return 0;

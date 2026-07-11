@@ -14,13 +14,26 @@ export async function POST(request: Request) {
     let calculatedAmount = 0;
     const purchasedItems = [];
 
+    // Helper to calculate exact price matching CurrencyContext
+    const getActualPrice = (item: any, curr: string) => {
+      if (curr === 'INR') {
+        if (item.inrSalePrice !== undefined && item.inrSalePrice !== null && Number(item.inrSalePrice) >= 0) return Number(item.inrSalePrice);
+        if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) >= 0) return Number(item.inrPrice);
+        if (item.salePrice !== undefined && item.salePrice !== null && Number(item.salePrice) >= 0) return Number(item.salePrice) * 84;
+        return (Number(item.price) || 0) * 84;
+      }
+      if (item.salePrice !== undefined && item.salePrice !== null && Number(item.salePrice) >= 0) return Number(item.salePrice);
+      if (item.price !== undefined && item.price !== null && Number(item.price) >= 0) return Number(item.price);
+      return 0;
+    };
+
     // Check if it's the bundle
     const hasBundle = cart.some(item => item.id === 'bundle');
     
     if (hasBundle) {
       const settingsDoc = await adminDb.collection('settings').doc('homepage').get();
       const settings = settingsDoc.data();
-      const bundlePrice = currency === 'INR' ? (settings?.bundleInrPrice || settings?.bundlePrice * 80) : (settings?.bundlePrice || 195);
+      const bundlePrice = currency === 'INR' ? (settings?.bundleInrPrice || settings?.bundlePrice * 84) : (settings?.bundlePrice || 195);
       calculatedAmount += Number(bundlePrice);
       
       purchasedItems.push({
@@ -36,7 +49,7 @@ export async function POST(request: Request) {
         const productDoc = await adminDb.collection('products').doc(item.id).get();
         if (productDoc.exists) {
           const productData = productDoc.data();
-          const itemPrice = currency === 'INR' ? (productData?.inrSalePrice || productData?.inrPrice || (productData?.salePrice || productData?.price) * 80) : (productData?.salePrice || productData?.price || 0);
+          const itemPrice = getActualPrice(productData, currency);
           calculatedAmount += Number(itemPrice);
           purchasedItems.push({
             id: productDoc.id,

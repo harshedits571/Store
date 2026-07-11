@@ -48,14 +48,29 @@ export async function POST(request: Request) {
 
     const getActualPrice = (item: any, curr: string) => {
       if (curr === 'INR') {
-        return item.inrSalePrice ?? item.inrPrice ?? (item.price * 84);
+        if (item.inrSalePrice !== undefined && item.inrSalePrice !== null && Number(item.inrSalePrice) >= 0) return Number(item.inrSalePrice);
+        if (item.inrPrice !== undefined && item.inrPrice !== null && Number(item.inrPrice) >= 0) return Number(item.inrPrice);
+        if (item.salePrice !== undefined && item.salePrice !== null && Number(item.salePrice) >= 0) return Number(item.salePrice) * 84;
+        return (Number(item.price) || 0) * 84;
       }
-      return item.salePrice ?? item.price ?? 0;
+      if (item.salePrice !== undefined && item.salePrice !== null && Number(item.salePrice) >= 0) return Number(item.salePrice);
+      if (item.price !== undefined && item.price !== null && Number(item.price) >= 0) return Number(item.price);
+      return 0;
     };
 
     // Loop through cart items to generate licenses
     for (const item of cart) {
       const actualPrice = getActualPrice(item, currency);
+
+      // Track Sales & Revenue per Product
+      if (item.id && item.id !== 'bundle') {
+        await adminDb.collection('products').doc(item.id).set({
+          sales: FieldValue.increment(1),
+          revenueINR: FieldValue.increment(currency === 'INR' ? actualPrice : 0),
+          revenueUSD: FieldValue.increment(currency === 'USD' ? actualPrice : 0)
+        }, { merge: true }).catch((e: any) => console.error("Error updating product stats:", e));
+      }
+
       if (item.id === 'bundle' && item.productIds) {
         // Expand bundle into individual product access records
         for (const pid of item.productIds) {
@@ -72,8 +87,8 @@ export async function POST(request: Request) {
               bundleId: item.id
             });
 
-            // Generate license for this specific bundle item if it's a plugin/script
-            if (pData?.requiresLicense !== false || ['Plugin', 'Script'].includes(pData?.category)) {
+            // Generate license for this specific bundle item if it's a plugin/script and requiresLicense is not false
+            if (pData?.requiresLicense !== false && (pData?.requiresLicense === true || ['Plugin', 'Script'].includes(pData?.category))) {
               const licenseKey = generate16DigitKey();
               
               // Save specific license tied to the sub-product
@@ -116,8 +131,8 @@ export async function POST(request: Request) {
           price: actualPrice
         });
 
-        // Force license generation for software categories even if local cart state was stale
-        if (item.requiresLicense !== false || ['Plugin', 'Script', 'Bundle'].includes(item.category)) {
+        // Force license generation for software categories unless explicitly disabled
+        if (item.requiresLicense !== false && (item.requiresLicense === true || ['Plugin', 'Script', 'Bundle'].includes(item.category))) {
           const licenseKey = generate16DigitKey();
           
           await adminDb.collection('licenses').doc(licenseKey).set({

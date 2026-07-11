@@ -56,7 +56,8 @@ export default function AdminProducts() {
               <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Category</th>
               <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Price</th>
               <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Stock</th>
-              <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Sales</th>
+              <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Sold</th>
+              <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Earned</th>
               <th style={{ padding: '16px', fontWeight: 500, color: 'var(--text-secondary)' }}>Actions</th>
             </tr>
           </thead>
@@ -102,6 +103,13 @@ export default function AdminProducts() {
                     )}
                   </td>
                   <td style={{ padding: '16px' }}>{product.sales || 0}</td>
+                  <td style={{ padding: '16px' }}>
+                    <div style={{ fontSize: '0.875rem' }}>
+                      {(product.revenueUSD || 0) > 0 && <div>${Number(product.revenueUSD).toFixed(2)}</div>}
+                      {(product.revenueINR || 0) > 0 && <div style={{ color: 'var(--text-secondary)' }}>₹{Number(product.revenueINR).toFixed(2)}</div>}
+                      {!(product.revenueUSD || 0) && !(product.revenueINR || 0) && '$0.00'}
+                    </div>
+                  </td>
                   <td style={{ padding: '16px' }}>
                     <Link href={`/admin/products/edit/${product.id}`} className="btn-secondary" style={{ padding: '4px 12px', fontSize: '0.75rem', marginRight: '8px', textDecoration: 'none', display: 'inline-block' }}>Edit</Link>
                     <button className="btn-secondary" onClick={() => handleDelete(product.id)} style={{ padding: '4px 12px', fontSize: '0.75rem', color: 'var(--danger)', borderColor: 'var(--danger)' }}>Delete</button>
