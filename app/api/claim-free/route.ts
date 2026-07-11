@@ -131,7 +131,7 @@ export async function POST(request: Request) {
               bundleId: item.id
             });
 
-            if (pData?.requiresLicense !== false || ['Plugin', 'Script'].includes(pData?.category)) {
+            if (pData?.requiresLicense === true) {
               const licenseKey = generate16DigitKey();
               await adminDb.collection('licenses').doc(licenseKey).set({
                 email,
@@ -158,7 +158,7 @@ export async function POST(request: Request) {
         const pData = purchasedItems.find(p => p.id === item.id);
         finalItems.push({ id: item.id, name: item.name, category: item.category, price: 0 });
 
-        if (pData?.requiresLicense !== false || ['Plugin', 'Script'].includes(item.category)) {
+        if (pData?.requiresLicense === true) {
           const licenseKey = generate16DigitKey();
           await adminDb.collection('licenses').doc(licenseKey).set({
             email,

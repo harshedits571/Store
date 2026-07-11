@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useStore } from '../../context/StoreContext';
 import { db } from '@/lib/firebase';
@@ -22,6 +23,7 @@ export default function ProductDetailsPage({
   const { applyCustomPrice } = useCustomLink();
   const [added, setAdded] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const router = useRouter();
 
   // Find product from pre-loaded context
   const product = products.find(p => p.id === resolvedParams.id) || null;
@@ -40,6 +42,20 @@ export default function ProductDetailsPage({
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+  };
+
+  const handleBuyNow = () => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      salePrice: product.salePrice,
+      inrPrice: product.inrPrice,
+      inrSalePrice: product.inrSalePrice,
+      category: product.category,
+      requiresLicense: product.requiresLicense ?? true
+    });
+    router.push('/checkout');
   };
 
   if (!loading && !product) return <div className="container section" style={{ textAlign: 'center' }}>Product not found.</div>;
@@ -85,7 +101,7 @@ export default function ProductDetailsPage({
               {/* Main Image */}
               <div 
                 className={styles.mainImage} 
-                style={{ borderRadius: '24px', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border-subtle)', aspectRatio: '1/1', background: 'var(--bg-secondary)', position: 'relative' }}
+                style={{ borderRadius: '24px', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border-subtle)', aspectRatio: '16/9', background: 'var(--bg-secondary)', position: 'relative' }}
               >
                 <img 
                   src={images[activeImageIndex]} 
@@ -134,10 +150,10 @@ export default function ProductDetailsPage({
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          style={{ background: 'var(--bg-card)', padding: '40px', borderRadius: '24px', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border-subtle)', position: 'sticky', top: '120px', height: 'max-content' }}
+          style={{ background: 'black', padding: '40px', borderRadius: '24px', boxShadow: 'var(--shadow-lg)', border: 'none', height: 'max-content' }}
         >
           <span className={styles.categoryBadge}>{product.category}</span>
-          <h1 className="h1" style={{ marginTop: '16px', marginBottom: '8px' }}>{product.name}</h1>
+          <h1 style={{ marginTop: '16px', marginBottom: '8px', fontSize: '2rem', lineHeight: '1.2', fontWeight: 700 }}>{product.name}</h1>
           
           <div className={styles.priceTagContainer} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
             <div className={styles.priceTag} style={{ marginBottom: 0, fontSize: '3rem' }}>
@@ -164,9 +180,9 @@ export default function ProductDetailsPage({
             >
               {added ? '✓ Added to Cart' : `Add to Cart`}
             </motion.button>
-            <Link href="/checkout" className="btn-secondary" style={{ width: '100%', padding: '16px', textAlign: 'center', fontSize: '1.125rem', background: '#FCD34D', color: '#000', border: 'none' }}>
+            <button onClick={handleBuyNow} className="btn-secondary" style={{ width: '100%', padding: '16px', textAlign: 'center', fontSize: '1.125rem', background: '#FCD34D', color: '#000', border: 'none', cursor: 'pointer', borderRadius: '8px', fontWeight: 600 }}>
               Buy Now
-            </Link>
+            </button>
           </div>
 
           <div style={{ padding: '16px', borderRadius: '12px', marginBottom: '32px', border: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)', textAlign: 'center' }}>

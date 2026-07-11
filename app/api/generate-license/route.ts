@@ -87,8 +87,8 @@ export async function POST(request: Request) {
               bundleId: item.id
             });
 
-            // Generate license for this specific bundle item if it's a plugin/script and requiresLicense is not false
-            if (pData?.requiresLicense !== false && (pData?.requiresLicense === true || ['Plugin', 'Script'].includes(pData?.category))) {
+            // Generate license for this specific bundle item only if requiresLicense is explicitly true
+            if (pData?.requiresLicense === true) {
               const licenseKey = generate16DigitKey();
               
               // Save specific license tied to the sub-product
@@ -131,8 +131,8 @@ export async function POST(request: Request) {
           price: actualPrice
         });
 
-        // Force license generation for software categories unless explicitly disabled
-        if (item.requiresLicense !== false && (item.requiresLicense === true || ['Plugin', 'Script', 'Bundle'].includes(item.category))) {
+        // Only generate license if explicitly required by the product
+        if (item.requiresLicense === true) {
           const licenseKey = generate16DigitKey();
           
           await adminDb.collection('licenses').doc(licenseKey).set({
