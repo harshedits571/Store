@@ -35,6 +35,12 @@ export default function AdminProducts() {
     }
   };
 
+  // Handle Copy Link
+  const handleCopyLink = (id: string) => {
+    const url = `${window.location.origin}/products/${id}`;
+    navigator.clipboard.writeText(url);
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
@@ -111,6 +117,7 @@ export default function AdminProducts() {
                     </div>
                   </td>
                   <td style={{ padding: '16px' }}>
+                    <button className="btn-secondary" onClick={() => handleCopyLink(product.id)} style={{ padding: '4px 12px', fontSize: '0.75rem', marginRight: '8px', display: 'inline-block' }}>Copy Link</button>
                     <Link href={`/admin/products/edit/${product.id}`} className="btn-secondary" style={{ padding: '4px 12px', fontSize: '0.75rem', marginRight: '8px', textDecoration: 'none', display: 'inline-block' }}>Edit</Link>
                     <button className="btn-secondary" onClick={() => handleDelete(product.id)} style={{ padding: '4px 12px', fontSize: '0.75rem', color: 'var(--danger)', borderColor: 'var(--danger)' }}>Delete</button>
                   </td>

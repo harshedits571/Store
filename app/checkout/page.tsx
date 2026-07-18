@@ -14,12 +14,32 @@ export default function CheckoutPage() {
   const { user, signInWithGoogle, loading: authLoading } = useAuth();
   const { currency, getPrice, formatPrice } = useCurrency();
   const { homepageSettings: s, products } = useStore();
-  const { activeCustomLink, applyCustomPrice } = useCustomLink();
+  const { activeCustomLink, applyCustomPrice, applyCouponCode, removeCouponCode } = useCustomLink();
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  
+  // Coupon state
+  const [couponCode, setCouponCode] = useState('');
+  const [couponError, setCouponError] = useState('');
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+
   // Calculate exact total based on region
   const dynamicTotal = cart.reduce((sum, item) => sum + applyCustomPrice(item.id, getPrice(item), currency), 0);
+  const subTotal = cart.reduce((sum, item) => sum + getPrice(item), 0);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setApplyingCoupon(true);
+    setCouponError('');
+    const res = await applyCouponCode(couponCode);
+    if (!res.success) {
+      setCouponError(res.error || 'Invalid coupon code.');
+    } else {
+      setCouponCode('');
+    }
+    setApplyingCoupon(false);
+  };
 
   // Checkout Form State
   const [customerName, setCustomerName] = useState('');
@@ -209,7 +229,7 @@ export default function CheckoutPage() {
                 <div key={index} style={{ marginBottom: item.productIds ? '8px' : '0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <h4 style={{ fontWeight: 500 }}>{item.name}</h4>
+                      <h4 style={{ fontWeight: 500 }}>{item.name} {item.versionName ? `(${item.versionName})` : ''}</h4>
                       <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{item.category}</span>
                     </div>
                     <span style={{ fontWeight: 500 }}>{formatPrice(applyCustomPrice(item.id, getPrice(item), currency))}</span>
@@ -236,9 +256,67 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontWeight: 500 }}>Total</span>
-              <span className="h2 text-gradient" style={{ fontSize: '1.5rem' }}>{formatPrice(dynamicTotal)}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <span style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Subtotal</span>
+              <span style={{ fontWeight: 500 }}>{formatPrice(subTotal)}</span>
+            </div>
+
+            {/* Coupon Section */}
+            <div style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid var(--border-subtle)' }}>
+              {activeCustomLink ? (
+                <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '8px', border: '1px dashed var(--accent-primary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.25rem' }}>🏷️</span>
+                      <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{activeCustomLink.id}</span>
+                      <span style={{ fontSize: '0.75rem', background: 'var(--accent-primary)', color: 'white', padding: '2px 8px', borderRadius: '100px' }}>Applied</span>
+                    </div>
+                    {activeCustomLink.note && <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '4px' }}>{activeCustomLink.note}</div>}
+                  </div>
+                  <button onClick={removeCouponCode} style={{ background: 'none', border: 'none', color: 'var(--danger)', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}>
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '8px' }}>Have a coupon code?</p>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input 
+                      type="text" 
+                      className="input-field" 
+                      placeholder="Enter code" 
+                      value={couponCode} 
+                      onChange={e => setCouponCode(e.target.value)}
+                      style={{ flex: 1, textTransform: 'uppercase' }}
+                    />
+                    <button 
+                      className="btn-secondary" 
+                      onClick={handleApplyCoupon} 
+                      disabled={applyingCoupon || !couponCode.trim()}
+                      style={{ padding: '0 24px', whiteSpace: 'nowrap' }}
+                    >
+                      {applyingCoupon ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                  {couponError && (
+                    <div style={{ color: 'var(--danger)', fontSize: '0.875rem', marginTop: '8px', fontWeight: 500 }}>
+                      {couponError}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <span style={{ fontWeight: 700, fontSize: '1.25rem' }}>Total</span>
+              <div style={{ textAlign: 'right' }}>
+                {activeCustomLink && (
+                  <div style={{ textDecoration: 'line-through', color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '4px' }}>
+                    {formatPrice(subTotal)}
+                  </div>
+                )}
+                <span className="h2 text-gradient" style={{ fontSize: '2rem' }}>{formatPrice(dynamicTotal)}</span>
+              </div>
             </div>
           </div>
 

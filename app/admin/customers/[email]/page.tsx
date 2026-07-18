@@ -188,7 +188,7 @@ export default function CustomerDetailsPage({
                   <th style={{ padding: '16px 24px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Order</th>
                   <th style={{ padding: '16px 24px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Total</th>
                   <th style={{ padding: '16px 24px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Payment Status</th>
-                  <th style={{ padding: '16px 24px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Fulfilment Status</th>
+                  <th style={{ padding: '16px 24px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Product(s)</th>
                   <th style={{ padding: '16px 24px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', textAlign: 'right' }}>Date</th>
                 </tr>
               </thead>
@@ -207,10 +207,10 @@ export default function CustomerDetailsPage({
                           PAID ✓
                         </span>
                       </td>
-                      <td style={{ padding: '16px 24px' }}>
-                        <span style={{ background: 'rgba(52, 211, 153, 0.1)', color: '#34D399', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                          FULFILLED ✓
-                        </span>
+                      <td style={{ padding: '16px 24px', color: '#E5E7EB' }}>
+                        {order.items && order.items.length > 0 
+                          ? order.items.map((item: any) => item.name).join(', ') 
+                          : 'Unknown Product'}
                       </td>
                       <td style={{ padding: '16px 24px', textAlign: 'right', color: textMuted }}>
                         {order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleString() : ''}

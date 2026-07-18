@@ -205,7 +205,7 @@ export default function Home() {
 
         <motion.div 
           className={styles.infoCard}
-          style={{ background: 'var(--text-primary)', color: 'white' }}
+          style={{ background: 'var(--text-primary)', color: 'var(--bg-primary)' }}
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
@@ -265,8 +265,13 @@ export default function Home() {
                   <Link href={`/products/${p.id}`} className={styles.productCard}>
                     <div className={styles.productImage} style={img ? { backgroundImage: `url(${img})` } : { background: 'var(--bg-secondary)' }}>
                       <span className={styles.categoryBadge}>{p.category}</span>
+                      {p.stockStatus === 'out_of_stock' && (
+                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '1.25rem' }}>
+                          Out of Stock
+                        </div>
+                      )}
                     </div>
-                    <div className={styles.productBody}>
+                    <div className={styles.productBody} style={{ opacity: p.stockStatus === 'out_of_stock' ? 0.6 : 1 }}>
                       <h3 className={styles.productTitle}>{p.name}</h3>
                       <p className={styles.productDesc}>{p.description}</p>
                       <div className={styles.productFooter}>
@@ -378,42 +383,44 @@ export default function Home() {
       {/* ════════════════════════════════════════════════════
           SPLIT BANNER (For Bundle)
           ════════════════════════════════════════════════════ */}
-      <section className="section" style={{ padding: '80px 24px' }}>
-        <div className="container">
-          <Section>
-            <div className={styles.splitBanner}>
-              <div 
-                className={styles.splitBannerLeft} 
-                style={s.bundleBgUrl ? { 
-                  backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${s.bundleBgUrl})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                } : {}}
-              >
-                <h2 className={styles.bundleHeading}>{s.bundleTitle || 'Exclusive Bundle'}</h2>
-                <div className={styles.bundlePriceRow} style={{ marginBottom: '24px' }}>
-                  <span className={styles.salePrice}>{formatPrice(getPrice({ price: s.bundlePrice, inrPrice: s.bundleInrPrice }))}</span>
-                  <span className={styles.originalPrice}>{formatPrice(getPrice({ price: s.bundleOriginalPrice, inrPrice: s.bundleInrOriginalPrice }))}</span>
+      {(s.bundleTitle || s.bundlePrice > 0 || (s.bundleItems && s.bundleItems.length > 0)) && (
+        <section className="section" style={{ padding: '80px 24px' }}>
+          <div className="container">
+            <Section>
+              <div className={styles.splitBanner}>
+                <div 
+                  className={styles.splitBannerLeft} 
+                  style={s.bundleBgUrl ? { 
+                    backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${s.bundleBgUrl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  } : {}}
+                >
+                  <h2 className={styles.bundleHeading}>{s.bundleTitle || 'Exclusive Bundle'}</h2>
+                  <div className={styles.bundlePriceRow} style={{ marginBottom: '24px' }}>
+                    <span className={styles.salePrice}>{formatPrice(getPrice({ price: s.bundlePrice, inrPrice: s.bundleInrPrice }))}</span>
+                    <span className={styles.originalPrice}>{formatPrice(getPrice({ price: s.bundleOriginalPrice, inrPrice: s.bundleInrOriginalPrice }))}</span>
+                  </div>
+                  <button onClick={handleAddBundle} className="btn-primary" style={{ background: 'white', color: 'var(--accent-primary)', width: 'fit-content' }}>
+                    {bundleAdded ? 'Added to Cart!' : 'Get Lifetime Access'}
+                  </button>
                 </div>
-                <button onClick={handleAddBundle} className="btn-primary" style={{ background: 'white', color: 'var(--accent-primary)', width: 'fit-content' }}>
-                  {bundleAdded ? 'Added to Cart!' : 'Get Lifetime Access'}
-                </button>
-              </div>
-              <div className={styles.splitBannerRight}>
-                <h3 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '16px', letterSpacing: '-0.02em' }}>The Ultimate Collection.</h3>
-                <p className={styles.bundleSub}>{s.bundleSub || "Get instant lifetime access to our entire premium library. Everything you need in one package."}</p>
-                <div className={styles.bundleList}>
-                  {s.bundleItems?.map((item: string, i: number) => (
-                    <div key={i} className={styles.bundleItem} style={{ marginBottom: '12px' }}>
-                      <span className={styles.checkIcon} style={{ color: 'var(--success)', marginRight: '12px', fontWeight: 'bold' }}>✓</span> {item}
-                    </div>
-                  ))}
+                <div className={styles.splitBannerRight}>
+                  <h3 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '16px', letterSpacing: '-0.02em' }}>The Ultimate Collection.</h3>
+                  <p className={styles.bundleSub}>{s.bundleSub || "Get instant lifetime access to our entire premium library. Everything you need in one package."}</p>
+                  <div className={styles.bundleList}>
+                    {s.bundleItems?.map((item: string, i: number) => (
+                      <div key={i} className={styles.bundleItem} style={{ marginBottom: '12px' }}>
+                        <span className={styles.checkIcon} style={{ color: 'var(--success)', marginRight: '12px', fontWeight: 'bold' }}>✓</span> {item}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          </Section>
-        </div>
-      </section>
+            </Section>
+          </div>
+        </section>
+      )}
 
       {/* ════════════════════════════════════════════════════
           CREATOR BIOGRAPHY

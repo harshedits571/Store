@@ -113,6 +113,7 @@ button {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-glass);
   box-shadow: var(--shadow-glass);
+  border-radius: 16px;
 }
 
 .text-gradient {

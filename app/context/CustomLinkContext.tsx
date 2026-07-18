@@ -21,12 +21,16 @@ type CustomLinkContextType = {
   activeCustomLink: CustomLinkData | null;
   loadingLink: boolean;
   applyCustomPrice: (productId: string, currentPrice: number, currency: 'USD' | 'INR') => number;
+  applyCouponCode: (code: string) => Promise<{ success: boolean; error?: string }>;
+  removeCouponCode: () => void;
 };
 
 const CustomLinkContext = createContext<CustomLinkContextType>({ 
   activeCustomLink: null, 
   loadingLink: false,
-  applyCustomPrice: (id, price) => price
+  applyCustomPrice: (id, price) => price,
+  applyCouponCode: async () => ({ success: false }),
+  removeCouponCode: () => {}
 });
 
 export function CustomLinkProvider({ children }: { children: ReactNode }) {
@@ -119,8 +123,55 @@ export function CustomLinkProvider({ children }: { children: ReactNode }) {
     return currentPrice;
   };
 
+  const applyCouponCode = async (code: string) => {
+    try {
+      const cleanCode = code.trim().toUpperCase();
+      const docRef = doc(db, 'custom_links', cleanCode);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = { id: docSnap.id, ...docSnap.data() } as CustomLinkData;
+        
+        let isValid = true;
+        let errorMessage = "";
+        
+        if (!data.active) {
+          isValid = false;
+          errorMessage = "This coupon is inactive.";
+        }
+        
+        if (data.maxRedemptions > 0 && (data.currentRedemptions || 0) >= data.maxRedemptions) {
+          isValid = false;
+          errorMessage = "This coupon has reached its maximum usage limit.";
+        }
+        
+        if (isValid) {
+          setActiveCustomLink(data);
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('custom_link_ref', cleanCode);
+          }
+          return { success: true };
+        } else {
+          return { success: false, error: errorMessage };
+        }
+      } else {
+        return { success: false, error: "Invalid coupon code." };
+      }
+    } catch (err) {
+      console.error("Error applying coupon", err);
+      return { success: false, error: "An error occurred while applying the coupon." };
+    }
+  };
+
+  const removeCouponCode = () => {
+    setActiveCustomLink(null);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('custom_link_ref');
+    }
+  };
+
   return (
-    <CustomLinkContext.Provider value={{ activeCustomLink, loadingLink, applyCustomPrice }}>
+    <CustomLinkContext.Provider value={{ activeCustomLink, loadingLink, applyCustomPrice, applyCouponCode, removeCouponCode }}>
       {children}
     </CustomLinkContext.Provider>
   );

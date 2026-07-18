@@ -19,8 +19,34 @@ export default function CustomerDashboard() {
   const [loading, setLoading] = useState(true);
 
   // Tabs
-  const [activeTab, setActiveTab] = useState<'orders' | 'licenses' | 'reviews' | 'wishlist'>('orders');
+  const [activeTab, setActiveTab] = useState<'library' | 'orders' | 'reviews' | 'wishlist'>('library');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  const libraryItems = React.useMemo(() => {
+    const items: any[] = [];
+    orders.forEach(order => {
+      order.items?.forEach((item: any) => {
+        const uniqueId = item.versionId ? `${item.id}_${item.versionId}` : item.id;
+        const license = licenses.find(l => l.productId === uniqueId);
+        items.push({
+          uniqueId,
+          orderId: order.id,
+          date: order.createdAt,
+          itemData: item,
+          licenseKey: license?.licenseKey || null
+        });
+      });
+    });
+    const uniqueItems: any[] = [];
+    const seen = new Set();
+    items.forEach(i => {
+      if (!seen.has(i.uniqueId)) {
+        seen.add(i.uniqueId);
+        uniqueItems.push(i);
+      }
+    });
+    return uniqueItems;
+  }, [orders, licenses]);
 
   // Edit Mode
   const [isEditing, setIsEditing] = useState(false);
@@ -236,10 +262,10 @@ export default function CustomerDashboard() {
 
 
         {/* BOTTOM SECTION: TABS */}
-        <div style={{ borderBottom: `1px solid ${borderColor}`, display: 'flex', gap: '32px', marginBottom: '32px' }}>
+        <div style={{ borderBottom: `1px solid ${borderColor}`, display: 'flex', gap: '24px', marginBottom: '32px', overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '4px' }}>
           {[
-            { id: 'orders', label: 'Orders', count: orders.length },
-            { id: 'licenses', label: 'Licenses', count: licenses.length },
+            { id: 'library', label: 'My Library', count: libraryItems.length },
+            { id: 'orders', label: 'Order History', count: orders.length },
             { id: 'reviews', label: 'Reviews', count: 0 },
             { id: 'wishlist', label: 'Wishlist', count: null }
           ].map(tab => (
@@ -268,15 +294,15 @@ export default function CustomerDashboard() {
         {/* TAB CONTENTS */}
 
         {activeTab === 'orders' && (
-          <div className="table-responsive">
-            <table className="md-table-compact" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+          <div className="table-responsive" style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="md-table-compact" style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${borderColor}` }}>
-                  <th style={{ padding: '16px 8px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Order</th>
-                  <th style={{ padding: '16px 8px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Status</th>
-                  <th style={{ padding: '16px 8px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>Items</th>
-                  <th style={{ padding: '16px 8px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', textAlign: 'right' }}>Date</th>
-                  <th style={{ padding: '16px 8px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', textAlign: 'right' }}>Total</th>
+                  <th style={{ padding: '16px 8px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Order</th>
+                  <th style={{ padding: '16px 8px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Status</th>
+                  <th style={{ padding: '16px 8px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>Items</th>
+                  <th style={{ padding: '16px 8px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', textAlign: 'right', whiteSpace: 'nowrap' }}>Date</th>
+                  <th style={{ padding: '16px 8px', color: textMuted, fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', textAlign: 'right', whiteSpace: 'nowrap' }}>Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -296,22 +322,22 @@ export default function CustomerDashboard() {
                         onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = expandedOrderId === order.id ? 'rgba(255,255,255,0.02)' : 'transparent'}
                       >
-                        <td style={{ padding: '24px 8px', color: '#3B82F6', fontWeight: 500 }}>
+                        <td style={{ padding: '24px 8px', color: '#3B82F6', fontWeight: 500, whiteSpace: 'nowrap' }}>
                           <span style={{ display: 'inline-block', width: '16px', fontSize: '0.75rem', color: textMuted }}>
                             {expandedOrderId === order.id ? '▼' : '▶'}
                           </span>
                           #{order.id.substring(0, 6)}
                         </td>
-                        <td style={{ padding: '24px 8px' }}>
+                        <td style={{ padding: '24px 8px', whiteSpace: 'nowrap' }}>
                           <span style={{ background: 'rgba(52, 211, 153, 0.1)', color: 'var(--success)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>
                             Success ✓
                           </span>
                         </td>
-                        <td style={{ padding: '24px 8px', color: 'var(--text-primary)' }}>{order.items?.length || 1} items</td>
-                        <td style={{ padding: '24px 8px', textAlign: 'right', color: textMuted }}>
+                        <td style={{ padding: '24px 8px', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>{order.items?.length || 1} items</td>
+                        <td style={{ padding: '24px 8px', textAlign: 'right', color: textMuted, whiteSpace: 'nowrap' }}>
                           {order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleString() : ''}
                         </td>
-                        <td style={{ padding: '24px 8px', fontWeight: 600, color: 'var(--text-primary)', textAlign: 'right' }}>
+                        <td style={{ padding: '24px 8px', fontWeight: 600, color: 'var(--text-primary)', textAlign: 'right', whiteSpace: 'nowrap' }}>
                           {order.currency === 'INR' ? `₹${Number(order.amount).toFixed(2)}` : `$${Number(order.amount).toFixed(2)}`}
                         </td>
                       </tr>
@@ -319,37 +345,39 @@ export default function CustomerDashboard() {
                       {/* Expanded Content: Show Items */}
                       {expandedOrderId === order.id && (
                         <tr style={{ borderBottom: i === orders.length - 1 ? 'none' : `1px solid ${borderColor}` }}>
-                          <td colSpan={5} style={{ padding: '0 24px 24px 24px' }}>
+                          <td colSpan={5} style={{ padding: '0 8px 24px 8px' }}>
                             <div style={{ background: 'var(--bg-card)', padding: '16px', borderRadius: '8px', border: `1px solid ${borderColor}` }}>
                               <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: textMuted, marginBottom: '12px', fontWeight: 600 }}>Purchased Items</h4>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {order.items?.map((item: any, idx: number) => (
-                                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: idx === order.items.length - 1 ? 'none' : `1px solid ${borderColor}` }}>
-                                    <div>
+                                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', paddingBottom: '8px', borderBottom: idx === order.items.length - 1 ? 'none' : `1px solid ${borderColor}` }}>
+                                    <div style={{ flex: '1 1 200px' }}>
                                       <div style={{ fontWeight: 500, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                         {item.isBundleItem ? <span style={{ color: textMuted, fontSize: '0.875rem' }}>↳</span> : null}
                                         {item.name}
                                       </div>
                                       <div style={{ fontSize: '0.75rem', color: textMuted }}>{item.category}</div>
                                     </div>
-                                    {!item.isBundleItem && (
-                                      <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
-                                        {order.currency === 'INR' ? `₹${Number(item.price || 0).toFixed(2)}` : `$${Number(item.price || 0).toFixed(2)}`}
-                                      </div>
-                                    )}
-                                    {/* Download Button if applicable */}
-                                    {allProducts.find(p => p.id === item.id)?.downloadUrl && (
-                                      <a 
-                                        href={allProducts.find(p => p.id === item.id)?.downloadUrl} 
-                                        target="_blank" 
-                                        rel="noreferrer"
-                                        className="btn-secondary" 
-                                        style={{ padding: '4px 12px', fontSize: '0.75rem', textDecoration: 'none', marginLeft: '16px' }}
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        Download
-                                      </a>
-                                    )}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                      {!item.isBundleItem && (
+                                        <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+                                          {order.currency === 'INR' ? `₹${Number(item.price || 0).toFixed(2)}` : `$${Number(item.price || 0).toFixed(2)}`}
+                                        </div>
+                                      )}
+                                      {/* Download Button if applicable */}
+                                      {allProducts.find(p => p.id === item.id)?.downloadUrl && (
+                                        <a 
+                                          href={allProducts.find(p => p.id === item.id)?.downloadUrl} 
+                                          target="_blank" 
+                                          rel="noreferrer"
+                                          className="btn-secondary" 
+                                          style={{ padding: '6px 16px', fontSize: '0.75rem', textDecoration: 'none', whiteSpace: 'nowrap' }}
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          Download
+                                        </a>
+                                      )}
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -365,34 +393,63 @@ export default function CustomerDashboard() {
           </div>
         )}
 
-        {activeTab === 'licenses' && (
-          <div style={{ display: 'grid', gap: '24px' }}>
-            {licenses.length === 0 ? (
-              <div style={{ padding: '32px', textAlign: 'center', color: textMuted }}>No licenses generated.</div>
+        {activeTab === 'library' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+            {libraryItems.length === 0 ? (
+              <div style={{ padding: '64px 32px', textAlign: 'center', color: textMuted, gridColumn: '1 / -1', background: panelBg, borderRadius: '16px', border: `1px dashed ${borderColor}` }}>
+                <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📦</div>
+                <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '8px' }}>Your library is empty</h3>
+                <p>When you purchase assets, they will appear here for instant download.</p>
+                <Link href="/products" className="btn-primary" style={{ display: 'inline-block', marginTop: '24px' }}>Browse Catalog</Link>
+              </div>
             ) : (
-              licenses.map(lic => (
-                <div key={lic.id} style={{ background: panelBg, borderRadius: '8px', border: `1px solid ${borderColor}`, padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <h3 style={{ fontSize: '1.25rem', marginBottom: '12px', fontWeight: 600, margin: '0 0 8px 0' }}>{lic.productName}</h3>
-                    <div style={{ display: 'inline-block', background: '#000', padding: '12px 16px', borderRadius: '4px', border: '1px dashed var(--accent-primary)', fontFamily: 'monospace', fontSize: '1.125rem', color: 'var(--accent-primary)' }}>
-                      {lic.licenseKey}
+              libraryItems.map(item => {
+                const product = allProducts.find(p => p.id === item.itemData.id);
+                const imgUrl = product?.imageUrls?.[0] || product?.imageUrl || '';
+                const downloadUrl = product?.downloadUrl;
+                
+                return (
+                  <div key={item.uniqueId} style={{ background: panelBg, borderRadius: '16px', border: `1px solid ${borderColor}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s, box-shadow 0.2s', cursor: 'default' }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.2)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  >
+                    <div style={{ height: '180px', background: imgUrl ? `url(${imgUrl}) center/cover` : 'var(--bg-secondary)', borderBottom: `1px solid ${borderColor}`, position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', color: '#fff', fontSize: '0.75rem', padding: '4px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                        {item.itemData.category || 'Asset'}
+                      </div>
+                    </div>
+                    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <h3 style={{ margin: '0 0 4px 0', fontSize: '1.125rem', fontWeight: 700, lineHeight: 1.3 }}>{item.itemData.name}</h3>
+                      {item.itemData.versionName && <div style={{ color: '#3B82F6', fontSize: '0.875rem', fontWeight: 600, marginBottom: '16px' }}>Variant: {item.itemData.versionName}</div>}
+                      
+                      <div style={{ marginTop: 'auto', paddingTop: '24px' }}>
+                        {item.licenseKey && (
+                          <div style={{ marginBottom: '16px' }}>
+                            <div style={{ fontSize: '0.75rem', color: textMuted, marginBottom: '4px', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>License Key</div>
+                            <div 
+                              onClick={() => { navigator.clipboard.writeText(item.licenseKey); alert('Copied to clipboard!'); }}
+                              style={{ background: 'var(--bg-secondary)', border: `1px solid ${borderColor}`, padding: '10px 12px', borderRadius: '8px', fontSize: '0.875rem', fontFamily: 'monospace', color: 'var(--text-primary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                              title="Click to copy"
+                            >
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.licenseKey}</span>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {downloadUrl ? (
+                          <a href={downloadUrl} target="_blank" rel="noreferrer" className="btn-primary" style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '8px', padding: '12px' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Download Asset
+                          </a>
+                        ) : (
+                           <button className="btn-secondary" disabled style={{ width: '100%', opacity: 0.5, padding: '12px' }}>Pending Setup</button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  {allProducts.find(p => p.id === lic.productId)?.downloadUrl ? (
-                    <a 
-                      href={allProducts.find(p => p.id === lic.productId)?.downloadUrl} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="btn-primary" 
-                      style={{ padding: '10px 24px', textDecoration: 'none' }}
-                    >
-                      Download Asset
-                    </a>
-                  ) : (
-                    <button className="btn-secondary" disabled style={{ padding: '10px 24px', opacity: 0.5 }}>No Asset Available</button>
-                  )}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}

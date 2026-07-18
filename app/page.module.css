@@ -449,7 +449,7 @@
 
 .productCard:hover .productBtn {
   background: var(--text-primary);
-  color: white;
+  color: var(--bg-primary);
 }
 
 /* ═══════════════════════════════════════════════════════════

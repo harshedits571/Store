@@ -13,8 +13,8 @@ type PriceableItem = {
 type CurrencyContextType = {
   currency: CurrencyType;
   symbol: string;
-  getPrice: (item: PriceableItem) => number;
-  getOriginalPrice: (item: PriceableItem) => number;
+  getPrice: (item: PriceableItem | null | undefined) => number;
+  getOriginalPrice: (item: PriceableItem | null | undefined) => number;
   formatPrice: (amount: number) => string;
 };
 
@@ -63,7 +63,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     detectCurrency();
   }, []);
 
-  const getOriginalPrice = (item: PriceableItem): number => {
+  const getOriginalPrice = (item: PriceableItem | null | undefined): number => {
+    if (!item) return 0;
     const baseUsd = Number(item.price) || 0;
     
     if (currency === 'INR') {
@@ -83,7 +84,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     return 0;
   };
 
-  const getPrice = (item: PriceableItem): number => {
+  const getPrice = (item: PriceableItem | null | undefined): number => {
+    if (!item) return 0;
     if (currency === 'INR') {
       if (item.inrSalePrice !== undefined && item.inrSalePrice !== null && Number(item.inrSalePrice) >= 0) {
         return Number(item.inrSalePrice);

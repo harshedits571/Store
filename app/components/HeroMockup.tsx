@@ -64,19 +64,19 @@ export default function HeroMockup() {
           <motion.div
             animate={{ y: [0, -15, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            style={{ position: 'absolute', top: '20%', left: '10%', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', gap: '8px', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}
+            style={{ position: 'absolute', top: '20%', left: '10%', background: 'var(--bg-glass)', backdropFilter: 'blur(10px)', border: '1px solid var(--border-glass)', padding: '12px 16px', borderRadius: '12px', display: 'flex', gap: '8px', alignItems: 'center', boxShadow: 'var(--shadow-sm)' }}
           >
             <div style={{ width: '8px', height: '8px', background: '#3b82f6', borderRadius: '50%' }} />
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e2e8f0' }}>VFX Bundle</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>VFX Bundle</span>
           </motion.div>
 
           <motion.div
             animate={{ y: [0, 15, 0] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-            style={{ position: 'absolute', bottom: '30%', left: '12%', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', gap: '8px', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}
+            style={{ position: 'absolute', bottom: '30%', left: '12%', background: 'var(--bg-glass)', backdropFilter: 'blur(10px)', border: '1px solid var(--border-glass)', padding: '12px 16px', borderRadius: '12px', display: 'flex', gap: '8px', alignItems: 'center', boxShadow: 'var(--shadow-sm)' }}
           >
             <div style={{ width: '8px', height: '8px', background: '#eab308', borderRadius: '50%' }} />
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e2e8f0' }}>SFX Library</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>SFX Library</span>
           </motion.div>
 
           <motion.div
@@ -91,19 +91,19 @@ export default function HeroMockup() {
           <motion.div
             animate={{ y: [0, 20, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-            style={{ position: 'absolute', bottom: '25%', right: '12%', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', gap: '8px', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}
+            style={{ position: 'absolute', bottom: '25%', right: '12%', background: 'var(--bg-glass)', backdropFilter: 'blur(10px)', border: '1px solid var(--border-glass)', padding: '12px 16px', borderRadius: '12px', display: 'flex', gap: '8px', alignItems: 'center', boxShadow: 'var(--shadow-sm)' }}
           >
             <div style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }} />
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e2e8f0' }}>LUTS Pack</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>LUTS Pack</span>
           </motion.div>
           
           <motion.div
             animate={{ y: [0, -12, 0] }}
             transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
-            style={{ position: 'absolute', top: '25%', right: '15%', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', display: 'flex', gap: '8px', alignItems: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}
+            style={{ position: 'absolute', top: '25%', right: '15%', background: 'var(--bg-glass)', backdropFilter: 'blur(10px)', border: '1px solid var(--border-glass)', padding: '12px 16px', borderRadius: '12px', display: 'flex', gap: '8px', alignItems: 'center', boxShadow: 'var(--shadow-sm)' }}
           >
             <div style={{ width: '8px', height: '8px', background: '#8b5cf6', borderRadius: '50%' }} />
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e2e8f0' }}>Transitions</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>Transitions</span>
           </motion.div>
 
           <motion.div
@@ -118,13 +118,13 @@ export default function HeroMockup() {
           <div style={{
             position: 'relative',
             zIndex: 10,
-            background: 'rgba(15, 23, 42, 0.6)',
+            background: 'var(--bg-glass)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid var(--border-glass)',
             borderRadius: '24px',
             padding: '48px',
             textAlign: 'center',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
+            boxShadow: 'var(--shadow-lg)',
             width: '100%',
             maxWidth: '500px'
           }}>
@@ -159,15 +159,13 @@ export default function HeroMockup() {
                   fontWeight: 800, 
                   marginBottom: '16px',
                   lineHeight: '1.2',
-                  background: 'linear-gradient(to right, #fff, #94a3b8)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  color: 'var(--text-primary)',
                   whiteSpace: 'pre-line'
                 }}>
                   {SLIDES[activeSlide].title}
                 </h3>
                 
-                <p style={{ color: '#94a3b8', fontSize: '1.05rem', maxWidth: '300px', margin: '0 auto', lineHeight: '1.6', minHeight: '60px' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', maxWidth: '300px', margin: '0 auto', lineHeight: '1.6', minHeight: '60px' }}>
                   {SLIDES[activeSlide].desc}
                 </p>
               </motion.div>
@@ -181,7 +179,7 @@ export default function HeroMockup() {
                   style={{ 
                     width: activeSlide === idx ? '40px' : '16px', 
                     height: '4px', 
-                    background: activeSlide === idx ? '#3b82f6' : 'rgba(255,255,255,0.1)', 
+                    background: activeSlide === idx ? '#3b82f6' : 'var(--border-subtle)', 
                     borderRadius: '2px', 
                     transition: 'all 0.3s ease',
                     cursor: 'pointer'

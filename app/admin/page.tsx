@@ -8,10 +8,30 @@ import {
 } from 'recharts';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '../context/AdminContext';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const { leads, initialLoading: loading } = useAdmin();
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchVisitors = async () => {
+      try {
+        const res = await fetch('/api/track-visitor');
+        if (res.ok) {
+          const data = await res.json();
+          setVisitorCount(data.count ?? 0);
+        } else {
+          setVisitorCount(0);
+        }
+      } catch (err) {
+        console.error(err);
+        setVisitorCount(0);
+      }
+    };
+    fetchVisitors();
+  }, []);
   
   // Calculate Stats synchronously
   let totalOrders = 0;
@@ -23,12 +43,12 @@ export default function AdminDashboard() {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(now.getDate() - 7);
   
-  const dailyData: Record<string, number> = {};
+  const dailyData: Record<string, { revenue: number, orders: number }> = {};
   for(let i=6; i>=0; i--) {
     const d = new Date();
     d.setDate(now.getDate() - i);
     const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    dailyData[dateStr] = 0;
+    dailyData[dateStr] = { revenue: 0, orders: 0 };
   }
 
   leads.forEach(lead => {
@@ -42,7 +62,8 @@ export default function AdminDashboard() {
       
       const dateStr = leadDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       if (dailyData[dateStr] !== undefined) {
-        dailyData[dateStr] += Number(lead.amount) || 0;
+        dailyData[dateStr].revenue += Number(lead.amount) || 0;
+        dailyData[dateStr].orders += 1;
       }
     }
   });
@@ -50,7 +71,8 @@ export default function AdminDashboard() {
   newCustomers = uniqueEmails.size;
   const chartData = Object.keys(dailyData).map(date => ({
     date,
-    revenue: dailyData[date]
+    revenue: dailyData[date].revenue,
+    orders: dailyData[date].orders
   }));
   const recentOrders = leads.slice(0, 10);
 
@@ -127,6 +149,11 @@ export default function AdminDashboard() {
         {/* Top Metrics Row */}
         <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
           <div className="premium-card" style={{ padding: '16px 24px', minWidth: '150px' }}>
+            <div style={{ color: textMuted, fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>Total Visitors</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{visitorCount === null ? '...' : visitorCount}</div>
+            <div style={{ color: textMuted, fontSize: '0.75rem', marginTop: '4px' }}>All Time</div>
+          </div>
+          <div className="premium-card" style={{ padding: '16px 24px', minWidth: '150px' }}>
             <div style={{ color: textMuted, fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>Total Orders</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{loading ? '...' : totalOrders}</div>
             <div style={{ color: textMuted, fontSize: '0.75rem', marginTop: '4px' }}>Last 7 days</div>
@@ -150,7 +177,7 @@ export default function AdminDashboard() {
         {/* Sales Chart */}
         <div className="premium-card" style={{ padding: '24px' }}>
           <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: '0 0 4px 0', position: 'relative', zIndex: 2 }}>Sales vs actual</h3>
-          <p style={{ color: textMuted, fontSize: '0.875rem', margin: '0 0 24px 0', position: 'relative', zIndex: 2 }}>Actual earnings in the last 7 days</p>
+          <p style={{ color: textMuted, fontSize: '0.875rem', margin: '0 0 24px 0', position: 'relative', zIndex: 2 }}>Actual earnings and orders in the last 7 days</p>
           
           <div style={{ height: '300px', width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -160,12 +187,18 @@ export default function AdminDashboard() {
                     <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
                     <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
                   </linearGradient>
+                  <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
                 <XAxis dataKey="date" stroke={textMuted} fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke={textMuted} fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
+                <YAxis yAxisId="left" stroke={textMuted} fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
+                <YAxis yAxisId="right" orientation="right" stroke={textMuted} fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={{ backgroundColor: cardBg, borderColor: borderColor, color: 'var(--text-primary)' }} />
-                <Area type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
+                <Area yAxisId="left" type="monotone" dataKey="revenue" name="Revenue" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
+                <Area yAxisId="right" type="monotone" dataKey="orders" name="Orders" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorOrders)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

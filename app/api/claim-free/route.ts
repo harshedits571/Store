@@ -91,7 +91,19 @@ export async function POST(request: Request) {
         const productDoc = await adminDb.collection('products').doc(item.id).get();
         if (productDoc.exists) {
           const productData = productDoc.data();
-          let itemPrice = getActualPrice(productData, currency);
+          let targetData = productData;
+          if (productData?.hasVersions && item.versionId && productData.versions) {
+            const variant = productData.versions.find((v: any) => v.id === item.versionId);
+            if (variant) {
+              targetData = variant;
+            }
+          }
+          
+          if (targetData?.stockStatus === 'out_of_stock') {
+            return NextResponse.json({ error: `Product ${productData?.name} ${item.versionName ? `(${item.versionName})` : ''} is currently out of stock.` }, { status: 400 });
+          }
+          
+          let itemPrice = getActualPrice(targetData, currency);
           
           itemPrice = applyLinkDiscount(productDoc.id, itemPrice);
           calculatedAmount += itemPrice;
@@ -101,7 +113,9 @@ export async function POST(request: Request) {
             name: productData?.name || item.name,
             category: productData?.category || item.category,
             price: itemPrice,
-            requiresLicense: productData?.requiresLicense
+            requiresLicense: productData?.requiresLicense,
+            versionId: item.versionId || null,
+            versionName: item.versionName || null
           });
         }
       }
@@ -156,27 +170,37 @@ export async function POST(request: Request) {
         finalItems.push({ id: item.id, name: item.name, category: item.category, price: 0 });
       } else {
         const pData = purchasedItems.find(p => p.id === item.id);
-        finalItems.push({ id: item.id, name: item.name, category: item.category, price: 0 });
+        const uniqueProductId = item.versionId ? `${item.id}_${item.versionId}` : item.id;
+        const uniqueProductName = item.versionName ? `${item.name} (${item.versionName})` : item.name;
+
+        finalItems.push({ 
+          id: item.id, 
+          name: item.name, 
+          category: item.category, 
+          price: 0,
+          versionId: item.versionId || null,
+          versionName: item.versionName || null
+        });
 
         if (pData?.requiresLicense === true) {
           const licenseKey = generate16DigitKey();
           await adminDb.collection('licenses').doc(licenseKey).set({
             email,
             licenseKey,
-            productId: item.id,
-            productName: item.name,
+            productId: uniqueProductId,
+            productName: uniqueProductName,
             paymentId: 'free',
             status: 'active',
             machineId: null,
             createdAt: FieldValue.serverTimestamp()
           });
-          await adminDb.collection('license_by_email').doc(`${email}_${item.id}`).set({
+          await adminDb.collection('license_by_email').doc(`${email}_${uniqueProductId}`).set({
             email,
             licenseKey,
-            productId: item.id,
+            productId: uniqueProductId,
             status: 'active'
           });
-          generatedLicenses.push({ name: item.name, key: licenseKey });
+          generatedLicenses.push({ name: uniqueProductName, key: licenseKey });
         }
       }
     }
@@ -196,6 +220,14 @@ export async function POST(request: Request) {
       verifiedAt: FieldValue.serverTimestamp()
     });
 
+    // 4.5. Update Product Sales Stats
+    for (const item of finalItems) {
+      if (item.id === 'bundle' || item.isBundleItem) continue; // Only increment main products (or modify if you track bundle items)
+      await adminDb.collection('products').doc(item.id).set({
+        sales: FieldValue.increment(1)
+      }, { merge: true }).catch(() => {});
+    }
+
     // 5. Update CRM
     const customerRef = adminDb.collection('customers').doc(email.toLowerCase());
     await customerRef.set({
@@ -214,7 +246,8 @@ export async function POST(request: Request) {
     if (customLinkCode) {
       const linkRef = adminDb.collection('custom_links').doc(customLinkCode);
       await linkRef.set({
-        claims: FieldValue.increment(1)
+        claims: FieldValue.increment(1),
+        currentRedemptions: FieldValue.increment(1)
       }, { merge: true }).catch((e: any) => console.error("Error updating link:", e));
     }
 

@@ -81,7 +81,20 @@ export async function POST(request: Request) {
         const productDoc = await adminDb.collection('products').doc(item.id).get();
         if (productDoc.exists) {
           const productData = productDoc.data();
-          let itemPrice = getActualPrice(productData, currency);
+          
+          let targetData = productData;
+          if (productData?.hasVersions && item.versionId && productData.versions) {
+            const variant = productData.versions.find((v: any) => v.id === item.versionId);
+            if (variant) {
+              targetData = variant;
+            }
+          }
+          
+          if (targetData?.stockStatus === 'out_of_stock') {
+            return NextResponse.json({ error: `Product ${productData?.name} ${item.versionName ? `(${item.versionName})` : ''} is currently out of stock.` }, { status: 400 });
+          }
+          
+          let itemPrice = getActualPrice(targetData, currency);
           
           itemPrice = applyLinkDiscount(productDoc.id, itemPrice);
           calculatedAmount += itemPrice;
@@ -90,7 +103,9 @@ export async function POST(request: Request) {
             id: productDoc.id,
             name: productData?.name || item.name,
             category: productData?.category || item.category,
-            price: itemPrice
+            price: itemPrice,
+            versionId: item.versionId || null,
+            versionName: item.versionName || null
           });
         }
       }

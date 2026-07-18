@@ -4,10 +4,10 @@ export default function Footer() {
   return (
     <footer style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-subtle)', padding: '64px 0 32px 0', marginTop: 'auto' }}>
       <div className="container">
-        
+
         {/* Top Section */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '48px', marginBottom: '64px' }}>
-          
+
           {/* Column 1: Brand */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <span className="h2 text-gradient" style={{ margin: 0 }}>Crevo Store</span>
@@ -40,7 +40,7 @@ export default function Footer() {
               <Link href="/faq" style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', textDecoration: 'none' }}>FAQ</Link>
             </div>
           </div>
-          
+
         </div>
 
         {/* Bottom Section */}
@@ -49,7 +49,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Crevo Store. All rights reserved.
           </span>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            Designed & developed by XH
+            Designed & developed by Harsh Edits
           </span>
         </div>
 

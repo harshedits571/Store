@@ -56,7 +56,7 @@ export default function ProductsPage() {
       ) : (
         <div className="grid-cols-3">
           {filteredProducts.map(product => (
-            <div key={product.id} className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div key={product.id} className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', opacity: product.stockStatus === 'out_of_stock' ? 0.6 : 1 }}>
               <div 
                 className={styles.productImagePlaceholder}
                 style={
@@ -71,6 +71,11 @@ export default function ProductsPage() {
                 }
               >
                  <span className={styles.categoryBadge}>{product.category}</span>
+                 {product.stockStatus === 'out_of_stock' && (
+                   <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '1.25rem' }}>
+                     Out of Stock
+                   </div>
+                 )}
               </div>
               <div>
                 <h3 className="h3">{product.name}</h3>

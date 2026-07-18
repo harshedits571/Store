@@ -124,11 +124,16 @@ export async function POST(request: Request) {
         });
 
       } else {
+        const uniqueProductId = item.versionId ? `${item.id}_${item.versionId}` : item.id;
+        const uniqueProductName = item.versionName ? `${item.name} (${item.versionName})` : item.name;
+
         purchasedItems.push({
           id: item.id,
           name: item.name,
           category: item.category,
-          price: actualPrice
+          price: actualPrice,
+          versionId: item.versionId || null,
+          versionName: item.versionName || null
         });
 
         // Only generate license if explicitly required by the product
@@ -138,22 +143,22 @@ export async function POST(request: Request) {
           await adminDb.collection('licenses').doc(licenseKey).set({
             email,
             licenseKey,
-            productId: item.id,
-            productName: item.name,
+            productId: uniqueProductId,
+            productName: uniqueProductName,
             paymentId: razorpay_payment_id,
             status: 'active',
             machineId: null,
             createdAt: FieldValue.serverTimestamp()
           });
 
-          await adminDb.collection('license_by_email').doc(`${email}_${item.id}`).set({
+          await adminDb.collection('license_by_email').doc(`${email}_${uniqueProductId}`).set({
             email,
             licenseKey,
-            productId: item.id,
+            productId: uniqueProductId,
             status: 'active'
           });
 
-          generatedLicenses.push({ name: item.name, key: licenseKey });
+          generatedLicenses.push({ name: uniqueProductName, key: licenseKey });
         }
       }
     }

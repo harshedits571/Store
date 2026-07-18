@@ -10,8 +10,8 @@ import { CurrencyProvider } from "./context/CurrencyContext";
 import SmoothScroll from "./components/SmoothScroll";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { CustomLinkProvider } from "./context/CustomLinkContext";
-import CustomLinkBanner from "./components/CustomLinkBanner";
 import GlobalLoader from "./components/GlobalLoader";
+import VisitorTracker from "./components/VisitorTracker";
 import { Suspense } from "react";
 import "./globals.css";
 
@@ -92,7 +92,7 @@ export default function RootLayout({
             <CartProvider>
             <Suspense fallback={null}>
               <CustomLinkProvider>
-                <CustomLinkBanner />
+                <VisitorTracker />
                 <Navbar />
                 <CartDrawer />
               <main>

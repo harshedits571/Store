@@ -22,6 +22,10 @@ export default function AddProductPage() {
   const [inrSalePrice, setInrSalePrice] = useState('');
   const [stockStatus, setStockStatus] = useState('in_stock');
   
+  // Versions / Variants
+  const [hasVersions, setHasVersions] = useState(false);
+  const [versions, setVersions] = useState<any[]>([{ id: 'v1', name: 'Basic', price: '', salePrice: '', inrPrice: '', inrSalePrice: '', assetUrl: '', stockStatus: 'in_stock' }]);
+  
   // Organization
   const [category, setCategory] = useState('Plugin');
   const [tags, setTags] = useState('');
@@ -34,9 +38,21 @@ export default function AddProductPage() {
 
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !price || !description || !assetUrl) {
-      alert("Please fill all required fields (Name, Price, Description, Asset URL)");
+    if (!name || !description) {
+      alert("Please fill all required fields (Name, Description)");
       return;
+    }
+    
+    if (hasVersions) {
+      if (versions.length === 0 || versions.some(v => !v.name || !v.price || !v.assetUrl)) {
+        alert("Please ensure all versions have a Name, Price, and Asset URL.");
+        return;
+      }
+    } else {
+      if (!price || !assetUrl) {
+        alert("Please fill all required fields (Price, Asset URL)");
+        return;
+      }
     }
     
     setSaving(true);
@@ -47,15 +63,26 @@ export default function AddProductPage() {
         description,
         imageUrl: imageUrls[0] || '',
         imageUrls: imageUrls.filter(url => url.trim() !== ''),
-        downloadUrl: assetUrl,
+        downloadUrl: hasVersions ? versions[0].assetUrl : assetUrl,
         videoUrl,
-        presetList: presetList.split('\\n').map(t => t.trim()).filter(t => t),
+        presetList: presetList.split('\n').map(t => t.trim()).filter(t => t),
         features: features.filter(f => f.title || f.description || f.imageUrl),
-        price: parseFloat(price),
-        inrPrice: inrPrice ? parseFloat(inrPrice) : null,
-        salePrice: salePrice ? parseFloat(salePrice) : null,
-        inrSalePrice: inrSalePrice ? parseFloat(inrSalePrice) : null,
-        stockStatus,
+        price: hasVersions ? parseFloat(versions[0].price) : parseFloat(price),
+        inrPrice: hasVersions ? (versions[0].inrPrice !== '' ? parseFloat(versions[0].inrPrice) : null) : (inrPrice !== '' ? parseFloat(inrPrice) : null),
+        salePrice: hasVersions ? (versions[0].salePrice !== '' ? parseFloat(versions[0].salePrice) : null) : (salePrice !== '' ? parseFloat(salePrice) : null),
+        inrSalePrice: hasVersions ? (versions[0].inrSalePrice !== '' ? parseFloat(versions[0].inrSalePrice) : null) : (inrSalePrice !== '' ? parseFloat(inrSalePrice) : null),
+        stockStatus: hasVersions ? versions[0].stockStatus : stockStatus,
+        hasVersions,
+        versions: hasVersions ? versions.map(v => ({
+           id: v.id,
+           name: v.name,
+           price: parseFloat(v.price),
+           salePrice: v.salePrice !== '' ? parseFloat(v.salePrice) : null,
+           inrPrice: v.inrPrice !== '' ? parseFloat(v.inrPrice) : null,
+           inrSalePrice: v.inrSalePrice !== '' ? parseFloat(v.inrSalePrice) : null,
+           assetUrl: v.assetUrl,
+           stockStatus: v.stockStatus
+        })) : [],
         category,
         tags: tags.split(',').map(t => t.trim()).filter(t => t),
         requiresLicense,
@@ -204,93 +231,152 @@ export default function AddProductPage() {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Asset Download URL * (The actual file customers receive)</label>
-                <input 
-                  type="url" 
-                  style={{ background: 'transparent', border: `1px dashed #3B82F6`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%' }} 
-                  placeholder="https://drive.google.com/..." 
-                  value={assetUrl} 
-                  onChange={e => setAssetUrl(e.target.value)} 
-                />
-              </div>
+              {!hasVersions && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Asset Download URL * (The actual file customers receive)</label>
+                  <input 
+                    type="url" 
+                    style={{ background: 'transparent', border: `1px dashed #3B82F6`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%' }} 
+                    placeholder="https://drive.google.com/..." 
+                    value={assetUrl} 
+                    onChange={e => setAssetUrl(e.target.value)} 
+                  />
+                </div>
+              )}
             </div>
           </div>
 
           {/* Inventory & Pricing */}
           <div style={{ background: panelBg, borderRadius: '8px', border: `1px solid ${borderColor}` }}>
-            <div style={{ padding: '24px', borderBottom: `1px solid ${borderColor}` }}>
+            <div style={{ padding: '24px', borderBottom: `1px solid ${borderColor}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0, color: '#E5E7EB' }}>Inventory & Pricing</h3>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.875rem', color: textMuted }}>
+                <input type="checkbox" checked={hasVersions} onChange={e => setHasVersions(e.target.checked)} style={{ accentColor: '#3B82F6', width: '16px', height: '16px' }} />
+                Has multiple versions?
+              </label>
             </div>
             
-            <div style={{ display: 'flex' }}>
-              {/* Left tabs (Mocked for layout) */}
-              <div style={{ width: '200px', borderRight: `1px solid ${borderColor}`, padding: '16px 0' }}>
-                <div style={{ padding: '12px 24px', color: 'var(--text-primary)', background: 'rgba(255,255,255,0.05)', fontWeight: 500, borderLeft: '3px solid #3B82F6' }}>Pricing</div>
-                <div style={{ padding: '12px 24px', color: textMuted, fontSize: '0.875rem' }}>Restock</div>
-                <div style={{ padding: '12px 24px', color: textMuted, fontSize: '0.875rem' }}>Attributes</div>
-              </div>
-              
-              {/* Right content */}
-              <div style={{ padding: '24px', flex: 1 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Regular price *</label>
-                    <input 
-                      type="number" 
-                      step="0.01"
-                      style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%' }} 
-                      placeholder="$$$" 
-                      value={price} 
-                      onChange={e => setPrice(e.target.value)} 
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Sale price (Optional)</label>
-                    <input 
-                      type="number" 
-                      step="0.01"
-                      style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%' }} 
-                      placeholder="$$$" 
-                      value={salePrice} 
-                      onChange={e => setSalePrice(e.target.value)} 
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Regular Price (INR) *Optional*</label>
-                    <input 
-                      type="number" 
-                      style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%' }} 
-                      placeholder="₹" 
-                      value={inrPrice} 
-                      onChange={e => setInrPrice(e.target.value)} 
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Sale price (INR) *Optional*</label>
-                    <input 
-                      type="number" 
-                      style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%' }} 
-                      placeholder="₹" 
-                      value={inrSalePrice} 
-                      onChange={e => setInrSalePrice(e.target.value)} 
-                    />
-                  </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {hasVersions ? (
+                <div style={{ padding: '24px' }}>
+                  {versions.map((version, idx) => (
+                    <div key={version.id} style={{ border: `1px solid ${borderColor}`, borderRadius: '8px', padding: '16px', marginBottom: '16px', background: 'rgba(255,255,255,0.02)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                        <h4 style={{ margin: 0, color: '#E5E7EB', fontSize: '1rem' }}>Version {idx + 1}</h4>
+                        {versions.length > 1 && (
+                          <button type="button" onClick={() => setVersions(versions.filter((_, i) => i !== idx))} style={{ color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem' }}>Remove</button>
+                        )}
+                      </div>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.75rem' }}>Version Name * (e.g. Basic)</label>
+                          <input type="text" value={version.name} onChange={e => {const v = [...versions]; v[idx].name = e.target.value; setVersions(v);}} style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '8px', borderRadius: '4px' }} placeholder="Pro Version" />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.75rem' }}>Stock Status</label>
+                          <select value={version.stockStatus} onChange={e => {const v = [...versions]; v[idx].stockStatus = e.target.value; setVersions(v);}} style={{ background: 'var(--bg-secondary)', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '8px', borderRadius: '4px' }}>
+                            <option value="in_stock">In Stock</option>
+                            <option value="out_of_stock">Out of Stock</option>
+                            <option value="offline">Offline / Hidden</option>
+                          </select>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.75rem' }}>Regular Price (USD) *</label>
+                          <input type="number" step="0.01" value={version.price} onChange={e => {const v = [...versions]; v[idx].price = e.target.value; setVersions(v);}} style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '8px', borderRadius: '4px' }} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.75rem' }}>Sale Price (USD)</label>
+                          <input type="number" step="0.01" value={version.salePrice} onChange={e => {const v = [...versions]; v[idx].salePrice = e.target.value; setVersions(v);}} style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '8px', borderRadius: '4px' }} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.75rem' }}>Regular Price (INR)</label>
+                          <input type="number" value={version.inrPrice} onChange={e => {const v = [...versions]; v[idx].inrPrice = e.target.value; setVersions(v);}} style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '8px', borderRadius: '4px' }} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.75rem' }}>Sale Price (INR)</label>
+                          <input type="number" value={version.inrSalePrice} onChange={e => {const v = [...versions]; v[idx].inrSalePrice = e.target.value; setVersions(v);}} style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '8px', borderRadius: '4px' }} />
+                        </div>
+                        <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.75rem' }}>Asset Download URL *</label>
+                          <input type="url" value={version.assetUrl} onChange={e => {const v = [...versions]; v[idx].assetUrl = e.target.value; setVersions(v);}} style={{ background: 'transparent', border: `1px dashed #3B82F6`, color: 'var(--text-primary)', padding: '8px', borderRadius: '4px' }} placeholder="https://..." />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <button type="button" onClick={() => setVersions([...versions, { id: 'v' + (versions.length + 1), name: '', price: '', salePrice: '', inrPrice: '', inrSalePrice: '', assetUrl: '', stockStatus: 'in_stock' }])} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>+ Add Version</button>
                 </div>
+              ) : (
+                <div style={{ display: 'flex' }}>
+                  {/* Left tabs (Mocked for layout) */}
+                  <div style={{ width: '200px', borderRight: `1px solid ${borderColor}`, padding: '16px 0' }}>
+                    <div style={{ padding: '12px 24px', color: 'var(--text-primary)', background: 'rgba(255,255,255,0.05)', fontWeight: 500, borderLeft: '3px solid #3B82F6' }}>Pricing</div>
+                    <div style={{ padding: '12px 24px', color: textMuted, fontSize: '0.875rem' }}>Restock</div>
+                    <div style={{ padding: '12px 24px', color: textMuted, fontSize: '0.875rem' }}>Attributes</div>
+                  </div>
+                  
+                  {/* Right content */}
+                  <div style={{ padding: '24px', flex: 1 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Regular price *</label>
+                        <input 
+                          type="number" 
+                          step="0.01"
+                          style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%' }} 
+                          placeholder="$$$" 
+                          value={price} 
+                          onChange={e => setPrice(e.target.value)} 
+                        />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Sale price (Optional)</label>
+                        <input 
+                          type="number" 
+                          step="0.01"
+                          style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%' }} 
+                          placeholder="$$$" 
+                          value={salePrice} 
+                          onChange={e => setSalePrice(e.target.value)} 
+                        />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Regular Price (INR) *Optional*</label>
+                        <input 
+                          type="number" 
+                          style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%' }} 
+                          placeholder="₹" 
+                          value={inrPrice} 
+                          onChange={e => setInrPrice(e.target.value)} 
+                        />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Sale price (INR) *Optional*</label>
+                        <input 
+                          type="number" 
+                          style={{ background: 'transparent', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%' }} 
+                          placeholder="₹" 
+                          value={inrSalePrice} 
+                          onChange={e => setInrSalePrice(e.target.value)} 
+                        />
+                      </div>
+                    </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Stock Status</label>
-                  <select 
-                    style={{ background: 'var(--bg-secondary)', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%', appearance: 'none' }}
-                    value={stockStatus}
-                    onChange={e => setStockStatus(e.target.value)}
-                  >
-                    <option value="in_stock">In Stock</option>
-                    <option value="out_of_stock">Out of Stock</option>
-                    <option value="offline">Offline / Hidden</option>
-                  </select>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <label style={{ fontWeight: 500, color: textMuted, fontSize: '0.875rem' }}>Stock Status</label>
+                      <select 
+                        style={{ background: 'var(--bg-secondary)', border: `1px solid ${borderColor}`, color: 'var(--text-primary)', padding: '12px', borderRadius: '4px', width: '100%', appearance: 'none' }}
+                        value={stockStatus}
+                        onChange={e => setStockStatus(e.target.value)}
+                      >
+                        <option value="in_stock">In Stock</option>
+                        <option value="out_of_stock">Out of Stock</option>
+                        <option value="offline">Offline / Hidden</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

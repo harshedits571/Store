@@ -11,6 +11,8 @@ export type CartItem = {
   category: string;
   requiresLicense?: boolean;
   productIds?: string[]; // Used for bundle items
+  versionId?: string;
+  versionName?: string;
 };
 
 type CartContextType = {
@@ -50,8 +52,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = (item: CartItem) => {
     setCart(prev => {
-      // Don't add duplicates
-      if (prev.find(i => i.id === item.id)) return prev;
+      const existingIdx = prev.findIndex(i => i.id === item.id);
+      if (existingIdx !== -1) {
+        if (prev[existingIdx].versionId === item.versionId) return prev; // Exact duplicate
+        // Replace with the new version if the user selects a different variant
+        const newCart = [...prev];
+        newCart[existingIdx] = item;
+        return newCart;
+      }
       return [...prev, item];
     });
     setCartOpen(true);

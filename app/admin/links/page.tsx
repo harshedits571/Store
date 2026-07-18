@@ -118,7 +118,7 @@ export default function CustomLinksPage() {
       ...prev,
       [productId]: {
         ...(prev[productId] || { inr: 0, usd: 0 }),
-        [currency]: Number(val)
+        [currency]: val === '' ? '' : Number(val)
       }
     }));
   };
@@ -266,8 +266,8 @@ export default function CustomLinksPage() {
                       return (
                         <div key={prodId} style={{ display: 'flex', gap: '12px', marginBottom: '12px', alignItems: 'center' }}>
                           <div style={{ width: '150px', fontSize: '0.875rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prodName}</div>
-                          <input type="number" placeholder="INR" value={fixedPrices[prodId]?.inr || ''} onChange={e => handleFixedPriceChange(prodId, 'inr', e.target.value)} style={{ flex: 1, padding: '8px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', color: 'white', borderRadius: '4px' }} required />
-                          <input type="number" placeholder="USD" value={fixedPrices[prodId]?.usd || ''} onChange={e => handleFixedPriceChange(prodId, 'usd', e.target.value)} style={{ flex: 1, padding: '8px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', color: 'white', borderRadius: '4px' }} required />
+                          <input type="number" step="0.01" placeholder="INR" value={fixedPrices[prodId]?.inr ?? ''} onChange={e => handleFixedPriceChange(prodId, 'inr', e.target.value)} style={{ flex: 1, padding: '8px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', color: 'white', borderRadius: '4px' }} required />
+                          <input type="number" step="0.01" placeholder="USD" value={fixedPrices[prodId]?.usd ?? ''} onChange={e => handleFixedPriceChange(prodId, 'usd', e.target.value)} style={{ flex: 1, padding: '8px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', color: 'white', borderRadius: '4px' }} required />
                         </div>
                       )
                     })
