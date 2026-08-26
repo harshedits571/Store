@@ -1,0 +1,159 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Function to check if the current user is an admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email != null && exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+    }
+    
+    // -------------------------------------------------------------------------
+    // Products Collection
+    // -------------------------------------------------------------------------
+    // Anyone can read products. Only Admin can write.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin(); 
+    }
+    
+    // -------------------------------------------------------------------------
+    // Leads / Orders Collection
+    // -------------------------------------------------------------------------
+    match /leads/{leadId} {
+      // Admin can read all. Created ONLY via backend API.
+      allow create, update, delete: if false; 
+      allow read: if isAdmin() || (request.auth != null && resource.data.email == request.auth.token.email); 
+    }
+
+    // -------------------------------------------------------------------------
+    // Licenses Collection
+    // -------------------------------------------------------------------------
+    match /licenses/{licenseId} {
+      allow create, update, delete: if false; // Only via backend
+      allow read: if isAdmin() || (request.auth != null && resource.data.email == request.auth.token.email);
+    }
+
+    // -------------------------------------------------------------------------
+    // License By Email Collection
+    // -------------------------------------------------------------------------
+    match /license_by_email/{email} {
+      allow create, update, delete: if false; // Only via backend
+      allow read: if isAdmin() || (request.auth != null && email == request.auth.token.email);
+    }
+
+    // -------------------------------------------------------------------------
+    // Customers Collection (CRM)
+    // -------------------------------------------------------------------------
+    match /customers/{customerId} {
+      allow create, update, delete: if false; // Only via backend
+      allow read: if isAdmin() || (request.auth != null && customerId == request.auth.token.email);
+    }
+
+    // -------------------------------------------------------------------------
+    // Custom Links Collection
+    // -------------------------------------------------------------------------
+    match /custom_links/{linkId} {
+      allow read: if true; // Public links
+      allow write: if isAdmin(); // Updates handled by backend Admin SDK
+    }
+
+    // -------------------------------------------------------------------------
+    // Promocodes Collection
+    // -------------------------------------------------------------------------
+    match /promocodes/{promocodeId} {
+      allow read: if true; // To validate promo codes
+      allow write: if isAdmin(); 
+    }
+
+    // -------------------------------------------------------------------------
+    // Settings Collection
+    // -------------------------------------------------------------------------
+    match /settings/{settingsId} {
+      allow read: if true; 
+      allow write: if isAdmin(); 
+    }
+    
+    // -------------------------------------------------------------------------
+    // Admins Collection
+    // -------------------------------------------------------------------------
+    match /admins/{email} {
+      allow read: if true; 
+      allow write: if isAdmin();
+    }
+    
+    // -------------------------------------------------------------------------
+    // Articles Collection
+    // -------------------------------------------------------------------------
+    match /articles/{articleId} {
+      allow read: if true; 
+      allow write: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Admin Team Members Collection
+    // -------------------------------------------------------------------------
+    match /admin_team/{memberId} {
+      allow read, write: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Admin Custom Roles Collection
+    // -------------------------------------------------------------------------
+    match /admin_roles/{roleId} {
+      allow read, write: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Promoter Collections
+    // -------------------------------------------------------------------------
+    match /promoter_applications/{appId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /promoters/{email} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /promoter_grants/{grantId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /promoter_requests/{reqId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /promoter_proof_submissions/{proofId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /promoter_commissions/{commId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /promoter_payouts/{payoutId} {
+      allow read, write: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Reviews Collection
+    // -------------------------------------------------------------------------
+    match /reviews/{reviewId} {
+      // Anyone can read reviews
+      allow read: if true;
+      // Only authenticated users can create a review (comment is optional)
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5;
+      // Only the review author can update or delete their review
+      allow update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+  }
+}

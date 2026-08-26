@@ -1,0 +1,317 @@
+/* ═══════════════════════════════════════════════════════════
+   COMPACT FLOATING FROSTED WHITE GLASS PILL NAVBAR
+   ═══════════════════════════════════════════════════════════ */
+
+.navbarWrapper {
+  position: fixed;
+  top: 20px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 9999;
+  transition: top 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.navbarWrapperScrolled {
+  top: 14px;
+}
+
+.navbar {
+  pointer-events: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  border-radius: 999px;
+  gap: 32px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  background: rgba(255, 255, 255, 0.15);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+}
+
+:global(.dark) .navbar {
+  background: rgba(18, 20, 26, 0.40);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glassBackground {
+  display: none;
+}
+
+/* ── Left Logo ── */
+.navLogo {
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.navLogo img {
+  height: 22px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* ── Centered Links ── */
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  position: relative;
+  z-index: 2;
+}
+
+.navLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: var(--accent-primary);
+  opacity: 0.8;
+}
+
+:global(.dark) .navLink:hover {
+  color: #ffffff;
+}
+
+/* ── Right Icons ── */
+.navIcons {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  max-width: 36px;
+  max-height: 36px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  padding: 0;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.iconBtn:hover {
+  transform: scale(1.08);
+  opacity: 0.85;
+}
+
+:global(.dark) .iconBtn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.iconBtn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.cartBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  aspect-ratio: 1 / 1;
+  background: #ff3b30;
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(255, 59, 48, 0.4);
+  box-sizing: border-box;
+  padding: 0;
+  line-height: 1;
+}
+
+/* ===== MOBILE MENU ===== */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1010;
+}
+
+.bar {
+  width: 18px;
+  height: 2px;
+  background-color: var(--text-primary);
+  border-radius: 4px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bar1 { transform: translateY(6px) rotate(45deg); }
+.bar2 { opacity: 0; transform: scaleX(0); }
+.bar3 { transform: translateY(-6px) rotate(-45deg); }
+
+.mobileMenu {
+  position: fixed;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  width: calc(100% - 32px);
+  max-width: 380px;
+  background: rgba(255, 255, 255, 0.15);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 999;
+}
+
+:global(.dark) .mobileMenu {
+  background: rgba(18, 20, 26, 0.40);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.mobileMenuOpen {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) scale(1);
+}
+
+.mobileNavLink {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .navbarWrapper {
+    width: 100%;
+    left: 0;
+    right: 0;
+    top: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .navbar {
+    width: calc(100% - 32px);
+    max-width: 380px;
+    height: 48px;
+    padding: 0 14px;
+    border-radius: 999px;
+    gap: 12px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(25px) saturate(190%);
+    -webkit-backdrop-filter: blur(25px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+  :global(.dark) .navbar {
+    background: rgba(18, 20, 26, 0.40);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  .navLogo img {
+    height: 18px;
+  }
+  .navLinks { display: none; }
+  .navIcons {
+    gap: 6px;
+  }
+  .iconBtn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 32px;
+    max-height: 32px;
+    aspect-ratio: 1 / 1;
+    padding: 0;
+  }
+  .iconBtn svg {
+    width: 16px;
+    height: 16px;
+  }
+  .hamburger {
+    display: flex;
+    position: relative;
+    z-index: 2;
+    margin-left: 2px;
+  }
+}
+
+@media (max-width: 375px) {
+  .navbar {
+    max-width: 345px;
+    padding: 0 12px;
+  }
+  .navIcons {
+    gap: 4px;
+  }
+}

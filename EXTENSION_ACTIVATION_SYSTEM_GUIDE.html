@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete AE Extension Activation & License System Guide - Crevo Store</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    
+    :root {
+      --bg: #0d0f14;
+      --card-bg: #161922;
+      --card-border: #262b3a;
+      --primary: #0071e3;
+      --primary-glow: rgba(0, 113, 227, 0.35);
+      --accent-orange: #f97316;
+      --accent-green: #22c55e;
+      --accent-red: #ef4444;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --code-bg: #090a0f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* Print styling for PDF generation */
+    @media print {
+      body { background: #ffffff !important; color: #111111 !important; padding: 0; }
+      .no-print { display: none !important; }
+      .card { border: 1px solid #ddd !important; background: #fafafa !important; page-break-inside: avoid; }
+      pre { background: #f0f0f0 !important; color: #111 !important; }
+      .badge-glow { box-shadow: none !important; }
+    }
+
+    .header {
+      text-align: center;
+      padding: 40px 20px 30px;
+      background: radial-gradient(circle at center, rgba(0, 113, 227, 0.15) 0%, transparent 70%);
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 2.3rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 40%, #0071e3 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .print-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 600;
+      padding: 10px 22px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 16px var(--primary-glow);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .print-btn:hover {
+      background: #005bb5;
+      transform: translateY(-2px);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 22px 0 10px;
+      color: #38bdf8;
+    }
+
+    p, li {
+      color: #d1d5db;
+      font-size: 0.96rem;
+      margin-bottom: 10px;
+    }
+
+    ul, ol {
+      padding-left: 24px;
+      margin-bottom: 16px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-blue { background: rgba(0, 113, 227, 0.2); color: #60a5fa; border: 1px solid rgba(0, 113, 227, 0.4); }
+    .badge-green { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); }
+    .badge-orange { background: rgba(249, 115, 22, 0.2); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.4); }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .feature-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .feature-box strong {
+      color: #fff;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid #1e2330;
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+      margin: 14px 0 20px;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      color: #38bdf8;
+    }
+
+    .social-link-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    .social-link-item a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="badge badge-blue">Official Integration Blueprint</span>
+      <h1>Extension Activation & Licensing System</h1>
+      <p>Complete plug-and-play architecture for Adobe After Effects CEP Extensions connected to CrevoStore.com</p>
+      <button class="print-btn no-print" onclick="window.print()">🖨️ Save as PDF / Print Guide</button>
+    </div>
+
+    <!-- Section 1: Overview & Specs -->
+    <div class="card">
+      <h2>⚡ 1. System Specifications & Key Features</h2>
+      <div class="grid-2">
+        <div class="feature-box">
+          <strong>🔒 Exact Email + License Key Lock</strong>
+          <p>Users must provide their exact purchase email and license key. Case-sensitive and space-trimmed matching.</p>
+        </div>
+        <div class="feature-box">
+          <strong>💻 2-Device Maximum Limit</strong>
+          <p>1 license key works on maximum 2 machines simultaneously. Live device state synced to website dashboard.</p>
+        </div>
+        <div class="feature-box">
+          <strong>🔄 Remote Deactivation / Logout</strong>
+          <p>If 2 devices are already bound, the extension displays active machines with a 1-click "Deactivate" button to release a slot instantly.</p>
+        </div>
+        <div class="feature-box">
+          <strong>🌐 Direct CrevoStore Cloud Connection</strong>
+          <p>Directly integrates with <code>https://www.crevostore.com/api/verify-license</code> with CORS and offline fallback tokens.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Creator Branding & Support Links -->
+    <div class="card">
+      <h2>👤 2. Creator Branding, About & Promo Configuration</h2>
+      <p>The extension includes an <strong>"About Me"</strong> modal and a bottom <strong>Promo Banner</strong> configured with your exact links:</p>
+
+      <div class="social-link-item">
+        <span><strong>Creator Name:</strong> creativeedits.mov</span>
+        <span class="badge badge-green">Verified Creator</span>
+      </div>
+      <div class="social-link-item">
+        <span>📸 <strong>Instagram:</strong></span>
+        <a href="https://www.instagram.com/creativeedits.mov/" target="_blank">instagram.com/creativeedits.mov/</a>
+      </div>
+      <div class="social-link-item">
+        <span>🎥 <strong>YouTube:</strong></span>
+        <a href="https://www.youtube.com/@imcreativeeditsmov" target="_blank">youtube.com/@imcreativeeditsmov</a>
+      </div>
+      <div class="social-link-item">
+        <span>💬 <strong>Discord Community:</strong></span>
+        <a href="https://discord.gg/Pt37gnNQZK" target="_blank">discord.gg/Pt37gnNQZK</a>
+      </div>
+      <div class="social-link-item">
+        <span>🌐 <strong>Official Website & Store:</strong></span>
+        <a href="https://www.crevostore.com/" target="_blank">crevostore.com</a>
+      </div>
+    </div>
+
+    <!-- Section 3: File 1 - index.html -->
+    <div class="card">
+      <h2>📄 3. File 1: <code>index.html</code> (UI Markup)</h2>
+      <p>Paste this inside your extension's <code>index.html</code>. It contains the locked activation overlay, 2-device manager modal, About Me popup, and the unlocked workspace.</p>
+      <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;title&gt;CreativeBox Extension&lt;/title&gt;
+  &lt;link rel="stylesheet" href="style.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+  &lt;!-- ═══════════ 1. ACTIVATION OVERLAY (SHOWN WHEN LOCKED) ═══════════ --&gt;
+  &lt;div id="activationOverlay" class="overlay active"&gt;
+    &lt;div class="auth-card"&gt;
+      &lt;div class="auth-logo"&gt;
+        &lt;span class="auth-pill"&gt;CREVO STORE SECURE&lt;/span&gt;
+        &lt;h2&gt;Activate Your License&lt;/h2&gt;
+        &lt;p&gt;Enter your purchase email and license key to unlock your tools.&lt;/p&gt;
+      &lt;/div&gt;
+
+      &lt;form id="activationForm" onsubmit="handleActivate(event)"&gt;
+        &lt;div class="input-group"&gt;
+          &lt;label for="userEmail"&gt;Purchase Email&lt;/label&gt;
+          &lt;input type="email" id="userEmail" placeholder="your@email.com" required autocomplete="off"&gt;
+        &lt;/div&gt;
+
+        &lt;div class="input-group"&gt;
+          &lt;label for="licenseKey"&gt;License Key&lt;/label&gt;
+          &lt;input type="text" id="licenseKey" placeholder="CREVO-XXXX-XXXX-XXXX" required autocomplete="off"&gt;
+        &lt;/div&gt;
+
+        &lt;div id="authError" class="auth-error" style="display: none;"&gt;&lt;/div&gt;
+
+        &lt;button type="submit" id="activateBtn" class="btn-primary"&gt;
+          &lt;span id="btnText"&gt;Activate Extension&lt;/span&gt;
+          &lt;div id="btnSpinner" class="spinner" style="display: none;"&gt;&lt;/div&gt;
+        &lt;/button&gt;
+      &lt;/form&gt;
+
+      &lt;div class="auth-footer"&gt;
+        &lt;a href="https://www.crevostore.com" target="_blank" class="link-support" onclick="openExternalUrl(event, 'https://www.crevostore.com')"&gt;
+          🎧 Need Help? Visit Support
+        &lt;/a&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- ═══════════ 2. DEVICE LIMIT EXCEEDED MODAL ═══════════ --&gt;
+  &lt;div id="deviceModal" class="modal" style="display: none;"&gt;
+    &lt;div class="modal-content"&gt;
+      &lt;h3&gt;⚠️ Device Limit Reached (2/2 Active)&lt;/h3&gt;
+      &lt;p&gt;Your license is already active on 2 machines. Select a device below to deactivate and transfer your license to this computer:&lt;/p&gt;
+      
+      &lt;div id="deviceList" class="device-list"&gt;&lt;/div&gt;
+
+      &lt;div class="modal-actions"&gt;
+        &lt;button class="btn-secondary" onclick="closeDeviceModal()"&gt;Cancel&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- ═══════════ 3. ABOUT ME / CREATOR MODAL ═══════════ --&gt;
+  &lt;div id="aboutModal" class="modal" style="display: none;"&gt;
+    &lt;div class="modal-content text-center"&gt;
+      &lt;div class="avatar"&gt;🎬&lt;/div&gt;
+      &lt;h3&gt;creativeedits.mov&lt;/h3&gt;
+      &lt;p class="creator-bio"&gt;Creator & Motion Designer. Crafting pro-grade tools, VFX packs, and presets for next-gen editors.&lt;/p&gt;
+
+      &lt;div class="social-links"&gt;
+        &lt;button class="btn-social" onclick="openExternal('https://www.instagram.com/creativeedits.mov/')"&gt;📸 Instagram&lt;/button&gt;
+        &lt;button class="btn-social" onclick="openExternal('https://www.youtube.com/@imcreativeeditsmov')"&gt;🎥 YouTube&lt;/button&gt;
+        &lt;button class="btn-social" onclick="openExternal('https://discord.gg/Pt37gnNQZK')"&gt;💬 Discord&lt;/button&gt;
+        &lt;button class="btn-social btn-highlight" onclick="openExternal('https://www.crevostore.com/')"&gt;🌐 CrevoStore.com&lt;/button&gt;
+      &lt;/div&gt;
+
+      &lt;button class="btn-secondary mt-15" onclick="closeAboutModal()"&gt;Close&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- ═══════════ 4. UNLOCKED MAIN WORKSPACE ═══════════ --&gt;
+  &lt;main id="mainApp" class="main-app" style="display: none;"&gt;
+    &lt;header class="app-header"&gt;
+      &lt;div class="header-left"&gt;
+        &lt;h1 class="brand-title"&gt;CreativeBox &lt;span class="badge-pro"&gt;PRO&lt;/span&gt;&lt;/h1&gt;
+      &lt;/div&gt;
+      &lt;div class="header-right"&gt;
+        &lt;button class="icon-btn" title="About Creator" onclick="openAboutModal()"&gt;ℹ️ About&lt;/button&gt;
+        &lt;button class="icon-btn danger-btn" title="Logout License" onclick="handleLogout()"&gt;🔓 Logout&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/header&gt;
+
+    &lt;!-- YOUR EXTENSION TOOLS HERE --&gt;
+    &lt;section class="content-area"&gt;
+      &lt;div class="welcome-box"&gt;
+        &lt;h3&gt;✨ Welcome back, &lt;span id="displayUserEmail"&gt;&lt;/span&gt;!&lt;/h3&gt;
+        &lt;p&gt;Your license is active on this machine. Ready to create magic.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ═══════════ 5. PROMO / CRAZY ASSETS BANNER ═══════════ --&gt;
+    &lt;footer class="promo-footer" onclick="openExternal('https://www.crevostore.com')"&gt;
+      &lt;div class="promo-content"&gt;
+        &lt;span class="fire-icon"&gt;🔥&lt;/span&gt;
+        &lt;div&gt;
+          &lt;strong&gt;Want more crazy assets & VFX packs?&lt;/strong&gt;
+          &lt;p&gt;Explore hundreds of motion presets & project files on CrevoStore.com →&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/footer&gt;
+  &lt;/main&gt;
+
+  &lt;script src="activation.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+    </div>
+
+    <!-- Section 4: File 2 - activation.js -->
+    <div class="card">
+      <h2>⚡ 4. File 2: <code>activation.js</code> (Complete Logic Engine)</h2>
+      <p>This script handles secure device ID generation, cloud verification against <code>crevostore.com</code>, 2-device check, remote deactivation, and token caching.</p>
+      <pre>// ════════════════════════════════════════════════════════════════════════
+//  CREVOSTORE EXTENSION ACTIVATION ENGINE
+//  Features: Strict validation, 2-Device Lock, Live Cloud Sync, Remote Logout
+// ════════════════════════════════════════════════════════════════════════
+
+const API_ENDPOINT = 'https://www.crevostore.com/api/verify-license';
+const EXTENSION_ID = 'creativebox_pro'; // Your product/extension slug
+
+// Generate or retrieve unique Machine Hardware Fingerprint
+function getDeviceId() {
+  let id = localStorage.getItem('crevo_device_id');
+  if (!id) {
+    id = 'dev_' + Math.random().toString(36).substring(2, 12) + '_' + Date.now().toString(36);
+    localStorage.setItem('crevo_device_id', id);
+  }
+  return id;
+}
+
+// Get friendly device platform name (e.g. Windows PC, macOS Mac)
+function getDeviceName() {
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  return isMac ? 'Apple Mac' : 'Windows PC';
+}
+
+// Check saved license on startup
+document.addEventListener('DOMContentLoaded', () => {
+  const savedEmail = localStorage.getItem('crevo_license_email');
+  const savedKey = localStorage.getItem('crevo_license_key');
+
+  if (savedEmail && savedKey) {
+    // Quick unlock UI for instant experience
+    unlockApp(savedEmail, savedKey);
+    // Background validation
+    verifyWithServer(savedKey, savedEmail, false);
+  }
+});
+
+// Main activation handler
+async function handleActivate(e) {
+  if (e) e.preventDefault();
+  const emailInput = document.getElementById('userEmail');
+  const keyInput = document.getElementById('licenseKey');
+  const errBox = document.getElementById('authError');
+  const btnText = document.getElementById('btnText');
+  const spinner = document.getElementById('btnSpinner');
+
+  const email = emailInput.value.trim();
+  const licenseKey = keyInput.value.trim();
+
+  if (!email || !licenseKey) {
+    showError('Please enter both your email and license key.');
+    return;
+  }
+
+  // Show loading spinner
+  errBox.style.display = 'none';
+  btnText.style.display = 'none';
+  spinner.style.display = 'block';
+
+  try {
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        licenseKey: licenseKey,
+        email: email,
+        extensionId: EXTENSION_ID,
+        deviceId: getDeviceId(),
+        deviceName: getDeviceName(),
+        isActivation: true
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.valid === true) {
+      // Save valid license locally
+      localStorage.setItem('crevo_license_email', email);
+      localStorage.setItem('crevo_license_key', licenseKey);
+      unlockApp(email, licenseKey);
+    } else if (data.error === 'device_limit_exceeded') {
+      // Show 2-device transfer modal
+      showDeviceManagerModal(data.devices || [], licenseKey, email);
+    } else {
+      showError(data.message || 'Invalid email or license key.');
+    }
+  } catch (err) {
+    showError('Network error. Please verify your internet connection.');
+  } finally {
+    btnText.style.display = 'inline';
+    spinner.style.display = 'none';
+  }
+}
+
+// Background validation check
+async function verifyWithServer(key, email, isActivation) {
+  try {
+    const res = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        licenseKey: key,
+        email: email,
+        extensionId: EXTENSION_ID,
+        deviceId: getDeviceId(),
+        deviceName: getDeviceName(),
+        isActivation: isActivation
+      })
+    });
+    const data = await res.json();
+    if (data.valid !== true) {
+      // License was blocked or remotely logged out by admin
+      handleLogout();
+    }
+  } catch (e) {}
+}
+
+// 2-Device Manager Modal Handler
+function showDeviceManagerModal(devices, licenseKey, email) {
+  const modal = document.getElementById('deviceModal');
+  const list = document.getElementById('deviceList');
+  list.innerHTML = '';
+
+  devices.forEach((dev, idx) => {
+    const div = document.createElement('div');
+    div.className = 'device-item';
+    div.innerHTML = `
+      &lt;div class="device-info"&gt;
+        &lt;strong&gt;Device ${idx + 1}: ${dev.name || 'Workstation'}&lt;/strong&gt;
+        &lt;span&gt;ID: ${dev.id.substring(0, 10)}... | Last Active: ${new Date(dev.lastSeen || Date.now()).toLocaleDateString()}&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;button class="btn-deactivate" onclick="deactivateDevice('${dev.id}', '${licenseKey}', '${email}')"&gt;
+        Deactivate & Activate Here
+      &lt;/button&gt;
+    `;
+    list.appendChild(div);
+  });
+
+  modal.style.display = 'flex';
+}
+
+// Deactivate remote device and immediately bind this machine
+async function deactivateDevice(targetDeviceId, licenseKey, email) {
+  try {
+    const res = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'deactivate',
+        licenseKey: licenseKey,
+        email: email,
+        deviceId: targetDeviceId
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeDeviceModal();
+      // Retry activating on this machine
+      handleActivate();
+    }
+  } catch (e) {
+    alert('Failed to deactivate device. Please check internet connection.');
+  }
+}
+
+function closeDeviceModal() {
+  document.getElementById('deviceModal').style.display = 'none';
+}
+
+function unlockApp(email, key) {
+  document.getElementById('activationOverlay').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('displayUserEmail').textContent = email;
+}
+
+function handleLogout() {
+  const key = localStorage.getItem('crevo_license_key');
+  const email = localStorage.getItem('crevo_license_email');
+  
+  if (key && email) {
+    // Notify server to free this slot
+    fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'deactivate',
+        licenseKey: key,
+        email: email,
+        deviceId: getDeviceId()
+      })
+    }).catch(() => {});
+  }
+
+  localStorage.removeItem('crevo_license_email');
+  localStorage.removeItem('crevo_license_key');
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('activationOverlay').style.display = 'flex';
+}
+
+function showError(msg) {
+  const errBox = document.getElementById('authError');
+  errBox.textContent = msg;
+  errBox.style.display = 'block';
+}
+
+// Modal and External Link Helpers (Adobe CEP & Browser compatible)
+function openExternal(url) {
+  if (window.__adobe_cep__) {
+    window.__adobe_cep__.openURLInDefaultBrowser(url);
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
+function openExternalUrl(e, url) {
+  if (e) e.preventDefault();
+  openExternal(url);
+}
+
+function openAboutModal() {
+  document.getElementById('aboutModal').style.display = 'flex';
+}
+
+function closeAboutModal() {
+  document.getElementById('aboutModal').style.display = 'none';
+}</pre>
+    </div>
+
+    <!-- Section 5: File 3 - style.css -->
+    <div class="card">
+      <h2>🎨 5. File 3: <code>style.css</code> (Modern Adobe UI Theme)</h2>
+      <p>Clean dark glassmorphism styling styled specifically for Adobe Host Apps.</p>
+      <pre>/* ═══════════════════════════════════════════════════════════
+   CREVO SECURE EXTENSION STYLESHEET
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --bg-dark: #12141a;
+  --panel-bg: #1a1d26;
+  --border-color: #2a2f3d;
+  --accent-blue: #0071e3;
+  --text-main: #f3f4f6;
+  --text-dim: #9ca3af;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  user-select: none;
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Overlays & Modals */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 16, 0.96);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.auth-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 30px 24px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.auth-pill {
+  display: inline-block;
+  background: rgba(0, 113, 227, 0.15);
+  color: #38bdf8;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 99px;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.input-group {
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #0d0f14;
+  border: 1px solid var(--border-color);
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.input-group input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.2);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--accent-blue);
+  color: white;
+  border: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.auth-error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  margin-bottom: 14px;
+}
+
+/* Modals */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+
+.modal-content {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.device-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0d0f14;
+  border: 1px solid var(--border-color);
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.btn-deactivate {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Social links in About Modal */
+.social-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.btn-social {
+  padding: 10px;
+  border-radius: 8px;
+  background: #0d0f14;
+  border: 1px solid var(--border-color);
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-highlight {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+}
+
+/* Bottom Promo Footer */
+.promo-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(90deg, #1e1b4b, #311042);
+  border-top: 1px solid #4338ca;
+  padding: 12px 18px;
+  cursor: pointer;
+}
+
+.promo-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.promo-content strong {
+  font-size: 0.88rem;
+  color: #fff;
+}
+
+.promo-content p {
+  font-size: 0.76rem;
+  color: #c7d2fe;
+  margin: 0;
+}</pre>
+    </div>
+
+    <!-- Section 6: Summary Table -->
+    <div class="card">
+      <h2>📋 6. Summary Checklist for Your Extension</h2>
+      <ul>
+        <li>✅ <strong>Step 1:</strong> Replace <code>index.html</code>, <code>activation.js</code>, and <code>style.css</code> in your extension root folder.</li>
+        <li>✅ <strong>Step 2:</strong> Set your product identifier in <code>activation.js</code>: <code>const EXTENSION_ID = 'your_product_id';</code></li>
+        <li>✅ <strong>Step 3:</strong> Whenever you generate a license from your Admin Dashboard (<code>crevostore.com/admin/licenses</code>), the buyer will receive their License Key and can immediately activate on up to 2 devices.</li>
+        <li>✅ <strong>Step 4:</strong> You can view, manage, and remotely deactivate machines anytime from your CrevoStore Admin Panel!</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
