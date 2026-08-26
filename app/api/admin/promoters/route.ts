@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const applications = appsSnap.docs.map(d => {
+    const applications = appsSnap.docs.map((d: any) => {
       const data = d.data();
       const email = (data.email || '').toLowerCase().trim();
       return {
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    const promoters = promotersSnap.docs.map(d => {
+    const promoters = promotersSnap.docs.map((d: any) => {
       const data = d.data();
       const email = (data.email || d.id || '').toLowerCase().trim();
       return {
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    const promoterEmails = new Set(promoters.map(p => p.email.toLowerCase()));
+    const promoterEmails = new Set(promoters.map((p: any) => p.email?.toLowerCase() || ''));
 
     // Merge both Grants & Claimed Project Files for all creators
     const grantsMap = new Map<string, any>();
@@ -105,9 +105,9 @@ export async function GET(req: NextRequest) {
 
     const grants = Array.from(grantsMap.values());
 
-    const requests = requestsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-    const proofs = proofsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-    const commissions = commsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const requests = requestsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+    const proofs = proofsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+    const commissions = commsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
 
     return NextResponse.json({
       success: true,
