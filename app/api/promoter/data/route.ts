@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     // 2. Fetch grants from promoter_grants (case-insensitive scan)
     const allGrantsSnap = await adminDb.collection('promoter_grants').get();
     const grants: any[] = allGrantsSnap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
+      .map((d: any) => ({ id: d.id, ...d.data() }))
       .filter((g: any) => {
         const gEmail = (g.promoterEmail || g.email || '').trim().toLowerCase();
         return gEmail === cleanEmail;
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     // 3. Also fetch all trial or granted licenses directly from licenses collection
     const allLicSnap = await adminDb.collection('licenses').get();
     const userLicenses = allLicSnap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
+      .map((d: any) => ({ id: d.id, ...d.data() }))
       .filter((l: any) => {
         const lEmail = (l.email || '').trim().toLowerCase();
         return lEmail === cleanEmail && (l.isPromoterTrial === true || l.type === 'promoter_trial' || (typeof l.note === 'string' && l.note.toLowerCase().includes('trial')));
@@ -66,13 +66,13 @@ export async function GET(req: NextRequest) {
     // 4. Fetch product requests (case-insensitive scan)
     const allReqSnap = await adminDb.collection('promoter_requests').get();
     const requests = allReqSnap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
+      .map((d: any) => ({ id: d.id, ...d.data() }))
       .filter((r: any) => (r.promoterEmail || r.email || '').trim().toLowerCase() === cleanEmail);
 
     // 5. Fetch commissions (case-insensitive scan)
     const allCommsSnap = await adminDb.collection('promoter_commissions').get();
     const commissions = allCommsSnap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
+      .map((d: any) => ({ id: d.id, ...d.data() }))
       .filter((c: any) => (c.promoterEmail || c.email || '').trim().toLowerCase() === cleanEmail);
     
     commissions.sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
     // 6. Fetch payouts history (case-insensitive scan)
     const allPayoutsSnap = await adminDb.collection('promoter_payouts').get();
     const payouts = allPayoutsSnap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
+      .map((d: any) => ({ id: d.id, ...d.data() }))
       .filter((p: any) => (p.promoterEmail || p.email || '').trim().toLowerCase() === cleanEmail);
     
     payouts.sort((a: any, b: any) => new Date(b.paidAt || 0).getTime() - new Date(a.paidAt || 0).getTime());
