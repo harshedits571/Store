@@ -288,6 +288,7 @@ export async function POST(request: Request) {
       }
 
       // Record Promoter Commission if link belongs to a promoter
+      let promoterEmail: string | null = linkDoc?.exists ? linkDoc.data()?.promoterEmail : null;
       try {
         if (!promoterEmail) {
           const promSnap = await adminDb.collection('promoters').where('referralCode', '==', cleanCode).get();
